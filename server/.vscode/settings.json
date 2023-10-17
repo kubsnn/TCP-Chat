@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.tcc": "h",
+        "variant": "h",
+        "iostream": "h",
+        "ostream": "cpp",
+        "thread": "cpp"
+    },
+    "cmake.configureOnOpen": false
+}
