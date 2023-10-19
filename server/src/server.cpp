@@ -12,7 +12,9 @@
 #include <algorithm>
 #include <thread>
 #include <csignal>
+#include <jaszyk/json.hpp>
 #include "wrappers.h"
+#include "user_database.h"
 
 class Client {
     static constexpr size_t kIpSize = sizeof("xxx.xxx.xxx.xxx");
@@ -133,12 +135,15 @@ private:
 
     static void handleClient(Client client) {
         std::cout << "client: " << client.socket().fd() << ", ip: " << client.ip() << " connected" << std::endl;
-        
+
         while (true) {
             try {
                 json data = client.socket().read();
-                client.socket().write(data["data"]);
-            } catch (const std::exception& ex) {
+                json obj = json::dictionary();
+                obj["success"] = true;
+                data.add(obj);
+                client.socket().write(data);
+            } catch (const std::exception& ex) { // socket closed
                 break;
             }
         }
@@ -154,5 +159,9 @@ private:
 };
 
 int main(int, char*[]) {
+    configure_databases();
+    UserDatabase db;
+    db.add({"ziomo", "spermula"});
+
     Server("127.0.0.1", 1100).run();
 }

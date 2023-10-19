@@ -30,18 +30,63 @@ Socket::Socket(const Socket& other) {
 
 Socket::~Socket() { }
 
-json Socket::read() const {
-    char buff[buffer_size];
-    if (::read(sockfd_, reinterpret_cast<void*>(buff), std::size(buff)) <= 0) {
-        throw std::runtime_error("connection has been lost");
+namespace {
+    inline int read_header(int fd) {
+        int size = 0;
+        if (::read(fd, &size, sizeof(int)) <= 0) {
+            throw std::runtime_error("connection has been lost");
+        }
+        return size;
     }
 
-    return json::parse(buff);
+    inline json read_data(int fd, const int message_size) {
+        char* data = new char[message_size];
+        char* buff = data;
+        int bytes_left = message_size;
+        while (bytes_left) {
+            int count = ::read(fd, buff, bytes_left);
+            if (count <= 0) {
+                throw std::runtime_error("connection has been lost");
+            }
+            buff += count;
+            bytes_left -= count;
+        }
+        auto message = json::parse({data, (unsigned int)message_size});
+        delete[] data;
+        return message;
+    }
+}
+
+json Socket::read() const {
+    int size = read_header(sockfd_);
+    return read_data(sockfd_, size);
+}
+
+namespace {
+    inline bool write_header(int fd, const std::string& message) {
+        int size = message.size() + 1;
+        if (::write(fd, &size, sizeof(int)) <= 0) return false;
+        return true;
+    }
+
+    inline bool write_data(int fd, const std::string& message) {
+        const char* data = message.c_str();
+        int size = message.size() + 1; 
+        while (size > 0) {
+            int count = ::write(fd, data, size);
+            if (count <= 0) return false;
+            data += count;
+            size -= count;
+        }
+        return true;
+    }
 }
 
 bool Socket::write(const json& data) const {
     auto str = data.to_string();
-    return ::write(sockfd_, str.c_str(), str.size() + 1) > 0;
+    write_header(sockfd_, str);
+
+    return write_data(sockfd_, str);
 }
 
 void Socket::close() {

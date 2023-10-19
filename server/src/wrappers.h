@@ -11,14 +11,13 @@
 #include <functional>
 #include <exception>
 #include <iostream>
-#include "json.hpp"
+#include <jaszyk/json.hpp>
  
 using jaszyk::json;
 
 void register_signal(int signum, std::function<void(int)> handler);
 
 class Socket {
-    static constexpr size_t buffer_size = 1024;
 public:
     Socket(int fd);
     Socket(Socket&& other) noexcept;
