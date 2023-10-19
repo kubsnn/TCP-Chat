@@ -1,0 +1,27 @@
+name: C++ CI
+
+on:
+  [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    #- name: Set up C++ environment
+    #  uses: actions/setup-c
+    #  with:
+    #    compiler: gcc
+
+    - name: Build C++ project
+      run: |
+        g++ -fdiagnostics-color=always -std=c++2a -I'include' -g \
+        server.cpp wrappers.cpp user_db_handle.cpp user.cpp lib/sqlite3.o -o server
+      working-directory: ${{ github.workspace }}
+
+    - name: Build
+      run: |
+      working-directory: ${{ github.workspace }}
