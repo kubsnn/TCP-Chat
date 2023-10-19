@@ -24,6 +24,7 @@ public:
         addr_.sin_family = AF_INET;
         addr_.sin_addr.s_addr = inet_addr(ip);
 
+        // on ctrl-v
         register_signal(SIGINT, [this](int signum) {
             socket_.close();
             std::cout << "application closed due to an interrupt" << std::endl;
