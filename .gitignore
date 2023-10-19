@@ -30,3 +30,5 @@
 *.exe
 *.out
 *.app
+server/src/server
+server/src/client

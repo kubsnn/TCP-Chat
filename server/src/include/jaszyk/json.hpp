@@ -32,6 +32,8 @@ namespace jaszyk {
 		using dictionary = json_map;
 		using object = dictionary;
 		using array = json_array;
+		using number = double;
+		using string = std::string;
 
 		inline json(const char* str)
 			: base(std::string(str))

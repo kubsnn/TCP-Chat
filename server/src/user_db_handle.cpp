@@ -1,7 +1,7 @@
-#include "user_database.h"
+#include "user_db_handle.h"
 #include <stdexcept>
 
-UserDatabase::UserDatabase()
+UserDbHandle::UserDbHandle()
     : db_(nullptr) 
 {
     if (sqlite3_open(database_name.c_str(), &db_) != SQLITE_OK) {
@@ -11,19 +11,19 @@ UserDatabase::UserDatabase()
     tryInitializeTables();
 }
 
-UserDatabase::UserDatabase(UserDatabase&& other) noexcept {
+UserDbHandle::UserDbHandle(UserDbHandle&& other) noexcept {
     db_ = other.db_;
     other.db_ = nullptr;
 }
 
-UserDatabase::~UserDatabase() {
+UserDbHandle::~UserDbHandle() {
     if (db_ == nullptr) return;
 
     sqlite3_close(db_);
     db_ = nullptr;
 }
 
-UserDatabase& UserDatabase::operator=(UserDatabase&& other) noexcept {
+UserDbHandle& UserDbHandle::operator=(UserDbHandle&& other) noexcept {
     if (this == &other) return *this;
     db_ = other.db_;
     other.db_ = nullptr;
@@ -31,7 +31,7 @@ UserDatabase& UserDatabase::operator=(UserDatabase&& other) noexcept {
     return *this;
 }
 
-bool UserDatabase::add(const User& user) const {
+bool UserDbHandle::add(const User& user) const {
     static constexpr auto query = "INSERT INTO USERS (USERNAME, PASSWORDHASH) VALUES (?, ?);";
 
     sqlite3_stmt* stmt;
@@ -52,7 +52,7 @@ bool UserDatabase::add(const User& user) const {
     return true;
 }
 
-bool UserDatabase::exists(const std::string &username) const
+bool UserDbHandle::exists(const std::string &username) const
 {
     static constexpr auto query = "SELECT COUNT(*) FROM USERS WHERE USERNAME = ?;";
     sqlite3_stmt* stmt;
@@ -73,7 +73,7 @@ bool UserDatabase::exists(const std::string &username) const
     return false;
 }
 
-const User UserDatabase::getById(int id) const
+const User UserDbHandle::getById(int id) const
 {
     static constexpr auto query = "SELECT ID, USERNAME, PASSWORDHASH FROM USERS WHERE ID = ?;";
     sqlite3_stmt* stmt;
@@ -95,24 +95,24 @@ const User UserDatabase::getById(int id) const
     return User("", "", -1);
 }
 
-const User UserDatabase::getByName(const std::string &username) const
+const User UserDbHandle::getByName(const std::string &username) const
 {
     return User("", "");
 }
 
-bool UserDatabase::verify(const User &credentials) const
+bool UserDbHandle::verify(const User &credentials) const
 {
     return false;
 }
 
-void UserDatabase::drop() const {
+void UserDbHandle::drop() const {
     static constexpr auto query = "DROP TABLE IF EXISTS USERS;";
     if (sqlite3_exec(db_, query, nullptr, nullptr, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot drop users table");
     }
 }
 
-void UserDatabase::tryInitializeTables() {
+void UserDbHandle::tryInitializeTables() {
     static constexpr auto query = "CREATE TABLE IF NOT EXISTS USERS (\
 ID INTEGER PRIMARY KEY AUTOINCREMENT,\
 USERNAME TEXT UNIQUE NOT NULL,\

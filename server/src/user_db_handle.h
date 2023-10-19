@@ -7,16 +7,16 @@
 
 void configure_databases();
 
-class UserDatabase {
+class UserDbHandle {
 public:
     inline static std::string database_name = "users.db";
 
-    UserDatabase();
-    UserDatabase(const UserDatabase&) = delete;
-    UserDatabase(UserDatabase&& other) noexcept;
-    ~UserDatabase();
-    UserDatabase& operator=(const UserDatabase&) = delete;
-    UserDatabase& operator=(UserDatabase&& other) noexcept;
+    UserDbHandle();
+    UserDbHandle(const UserDbHandle&) = delete;
+    UserDbHandle(UserDbHandle&& other) noexcept;
+    ~UserDbHandle();
+    UserDbHandle& operator=(const UserDbHandle&) = delete;
+    UserDbHandle& operator=(UserDbHandle&& other) noexcept;
 
     bool add(const User& user) const;
     bool exists(const std::string& username) const;
