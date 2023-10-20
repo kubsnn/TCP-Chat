@@ -12,8 +12,8 @@ def get_greeting(string):
     return f"hello {string}"
 
 @eel.expose
-def send_data(ip, port, data):
-    tcp.send_data(ip, port, data)
+def send_data(data):
+    tcp.send_data("127.0.0.1", 42069, data)
 
 def initProjectPath():
     script_directory = os.path.dirname(os.path.abspath(__file__))

@@ -12,7 +12,7 @@ const click = () => {
 }
 
 const send = () => {
-  eel.send_data("127.0.0.1", 42069, 'Hello from the server!')
+  eel.send_data('Hello from the server!')
 }
 </script>
 
