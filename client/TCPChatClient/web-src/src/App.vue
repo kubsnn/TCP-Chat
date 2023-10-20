@@ -10,11 +10,17 @@ const click = () => {
   eel.hello_world()
   console.log("clicked")
 }
+
+const send = () => {
+  eel.send_data("127.0.0.1", 42069, 'Hello from the server!')
+}
 </script>
 
 <template>
   <div>
     <p>{{ greeting }}</p>
     <button type="button" @click="click()">Click me</button>
+    <button type="button" @click="send()">Send Message</button>
+
   </div>
 </template>

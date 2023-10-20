@@ -4,5 +4,5 @@
 int main(int, char*[]) {
     configure_databases();
 
-    Server("127.0.0.1", 1100).run();
+    Server("127.0.0.1", 42069).run();
 }

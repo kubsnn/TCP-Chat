@@ -1,7 +1,6 @@
 import eel
 import os
-
-
+import tcp
 
 
 @eel.expose
@@ -11,6 +10,10 @@ def hello_world():
 @eel.expose
 def get_greeting(string):
     return f"hello {string}"
+
+@eel.expose
+def send_data(ip, port, data):
+    tcp.send_data(ip, port, data)
 
 def initProjectPath():
     script_directory = os.path.dirname(os.path.abspath(__file__))
