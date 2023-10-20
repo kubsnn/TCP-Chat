@@ -52,7 +52,7 @@ public:
             json data = json::dictionary();
 
             if (msg == "sendto") {
-                data["action"] = 1;
+                data["action"] = "sendto";
                 json::number fd = 0;
                 std::cin >> fd;
                 data["who"] = fd;
@@ -62,6 +62,28 @@ public:
                 data["message"] = std::move(line);
 
                 socket_.write(data);
+            }
+            if (msg == "register") {
+                data["action"] = "register";
+                std::cin >> msg;
+                data["creds"] = json::dictionary();
+                data["creds"]["username"] = msg;
+                std::cin >> msg;
+                data["creds"]["password"] = msg;
+
+                socket_.write(data);
+                msg = "";
+            }
+            if (msg == "login") {
+                data["action"] = "login";
+                std::cin >> msg;
+                data["creds"] = json::dictionary();
+                data["creds"]["username"] = msg;
+                std::cin >> msg;
+                data["creds"]["password"] = msg;
+
+                socket_.write(data);
+                msg = "";
             }
         }
 

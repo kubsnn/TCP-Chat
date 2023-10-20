@@ -13,6 +13,8 @@
                 "-g",
                 "main.cpp",
                 "server.cpp",
+                "client_handler.cpp",
+                "controller.cpp",
                 "client.cpp",
                 "wrappers.cpp",
                 "user_db_handle.cpp",

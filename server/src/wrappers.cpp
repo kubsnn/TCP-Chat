@@ -84,8 +84,9 @@ namespace {
 
 bool Socket::write(const json& data) const {
     auto str = data.to_string();
-    write_header(sockfd_, str);
 
+    std::lock_guard<std::mutex> lock(mutexes[sockfd_]);
+    write_header(sockfd_, str);
     return write_data(sockfd_, str);
 }
 

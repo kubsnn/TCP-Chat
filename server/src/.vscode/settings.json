@@ -55,7 +55,9 @@
         "streambuf": "cpp",
         "typeinfo": "cpp",
         "cinttypes": "cpp",
-        "optional": "cpp"
+        "optional": "cpp",
+        "condition_variable": "cpp",
+        "mutex": "cpp"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.default.includePath": [

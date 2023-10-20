@@ -2,6 +2,7 @@
 #ifndef __WRAPPERS_H__
 #define __WRAPPERS_H__
 
+#include "constants.h"
 #include <csignal>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -12,12 +13,15 @@
 #include <exception>
 #include <iostream>
 #include <jaszyk/json.hpp>
- 
+#include <mutex>
+#include <unordered_map>
+
 using jaszyk::json;
 
 void register_signal(int signum, std::function<void(int)> handler);
 
 class Socket {
+    inline static std::mutex mutexes[max_clients];
 public:
     Socket(int fd);
     Socket(Socket&& other) noexcept;
@@ -34,5 +38,7 @@ public:
 private:
     int sockfd_;
 };
+
+
 
 #endif // !__WRAPPERS_H__

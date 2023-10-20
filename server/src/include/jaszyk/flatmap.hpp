@@ -15,11 +15,11 @@ namespace jaszyk {
 		using const_iterator = typename std::vector<value_type>::const_iterator;
 
 		inline flatmap() = default;
-		inline flatmap(const flatmap& _Other) = default;
-		inline flatmap(flatmap&& _Other) noexcept = default;
+		inline flatmap(const flatmap& other) = default;
+		inline flatmap(flatmap&& other) noexcept = default;
 
-		inline flatmap& operator=(const flatmap& _Other) = default;
-		inline flatmap& operator=(flatmap&& _Other) noexcept = default;
+		inline flatmap& operator=(const flatmap& other) = default;
+		inline flatmap& operator=(flatmap&& other) noexcept = default;
 
 		inline void insert(const TKey& key, const TValue& val) {
 			data_.emplace_back(key, val);
@@ -36,6 +36,13 @@ namespace jaszyk {
 		template <class ...TArgs>
 		inline void emplace(const TKey& key, TArgs&&... vals) {
 			data_.emplace_back(key, std::forward<TArgs>(vals)...);
+		}
+
+		inline bool contains(const TKey& key) const {
+			for (const auto& [k, v] : data_) {
+				if (key == k) return true;
+			}
+			return false;
 		}
 
 		inline TValue& operator[](const TKey& key) {
