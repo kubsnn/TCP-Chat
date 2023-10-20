@@ -317,7 +317,7 @@ namespace jaszyk {
 		class json_parser {
 		public:
 			inline json_parser(std::string_view _Json)
-				: _Data(_Json), _Ignore_errors(false)
+				: _Ignore_errors(false), _Data(_Json)
 			{ }
 
 			inline json parse() {

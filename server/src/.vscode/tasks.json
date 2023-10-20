@@ -42,7 +42,7 @@
                 "-lpthread",
                 "-I'include'",
                 "-g",
-                "client_.cpp",
+                "client_.cxx",
                 "wrappers.cpp",
                 "-o",
                 "client"

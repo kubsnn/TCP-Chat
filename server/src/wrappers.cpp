@@ -55,10 +55,26 @@ namespace {
         delete[] data;
         return message;
     }
+
+    inline json data_to_long() {
+        json response = json::dictionary();
+        response["error"] = true;
+        response["result"] = "fail";
+        response["message"] = "request too big";
+        return response;
+    }
+
+    inline void skip_bytes(int fd) {
+        
+    }
 }
 
 json Socket::read() const {
     int size = read_header(sockfd_);
+    if (size > 65536) {
+        
+        return data_to_long();
+    }
     return read_data(sockfd_, size);
 }
 
