@@ -1,1 +1,8 @@
+version: "3.8"
 
+services:
+  chat-server:
+    build:
+      context: ./src
+    ports:
+      - "42069:42069"
