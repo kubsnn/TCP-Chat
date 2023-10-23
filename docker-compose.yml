@@ -3,5 +3,5 @@ version: "3.8"
 services:
   chat-server:
     build:
-      context: ./src
+      context: ./server
     network_mode: "host"

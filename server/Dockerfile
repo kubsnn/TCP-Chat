@@ -7,11 +7,10 @@ WORKDIR /app
 # Copy the project files into the container
 COPY . /app
 
-# Build the project using the Makefile
 RUN make
 
 # Expose the port your server will run on (replace with your server's port)
 EXPOSE 42069
 
 # Start the server (replace with your server's command)
-CMD ["./server"]
+CMD ["./bin/server", "'0.0.0.0'", "42069"]
