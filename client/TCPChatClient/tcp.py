@@ -1,4 +1,19 @@
 import socket
+import ipaddress
+
+def resolve_to_ip(host):
+    try:
+        # Check if the provided input is already an IP address
+        ipaddress.ip_address(host)
+        return host  # It's an IP address, no need to resolve
+    except ValueError:
+        try:
+            # It's not an IP address, so resolve it to an IP
+            ip = socket.gethostbyname(host)
+            return ip
+        except socket.gaierror:
+            return None  # Unable to resolve the hostname
+
 
 def start_tcp_server(host, port):
     # Create a TCP socket
@@ -29,10 +44,10 @@ def handle_client(client_socket):
 
 def send_data(ip, port, data):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
     try:
-        s.connect((ip, port))
-        print(s.send(data.encode('utf-8')))
+        resolvedIP = resolve_to_ip(ip)
+        s.connect((resolvedIP, port))
+        print(s.sendall(data.encode('utf-8')))
     except socket.error as e:
         print(str(e))
     s.close()
@@ -41,17 +56,3 @@ if __name__ == "__main__":
     host = '0.0.0.0'  # Listen on all available network interfaces
     port = 42069  # Choose an available port number
 
-    send_data('127.0.0.1', 42069, 'Hello from the server!')
-
-    #server_socket = start_tcp_server(host, port)
-
-    # while True:
-    #     # Accept a connection from a client
-    #     client_socket, client_address = server_socket.accept()
-
-    #     print(f"Accepted connection from {client_address}")
-
-    #     # Handle the client in a separate function
-    #     #handle_client(client_socket)
-
-    #     # Example of sending data to a specific IP and port

@@ -11,16 +11,36 @@ const click = () => {
   console.log("clicked")
 }
 
-const send = () => {
-  eel.send_data('Hello from the server!')
+const send = (message) => {
+  eel.send_data(message)
 }
+
+const registerMessage = JSON.stringify(
+  {
+    'action': 'register',
+    'creds': {
+      'username': 'user1',
+      'password': 'password1'
+    }
+  }
+)
+
+const loginMessage = JSON.stringify(
+  {
+    'action': 'login',
+    'creds': {
+      'username': 'user1',
+      'password': 'password1'
+    }
+  }
+)
+
 </script>
 
 <template>
   <div>
     <p>{{ greeting }}</p>
-    <button type="button" @click="click()">Click me</button>
-    <button type="button" @click="send()">Send Message</button>
-
+    <button type="button" @click="send(loginMessage)">Login</button>
+    <button type="button" @click="send(registerMessage)">Register</button>
   </div>
 </template>
