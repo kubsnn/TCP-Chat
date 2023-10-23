@@ -28,10 +28,14 @@ def handle_client(client_socket):
     client_socket.close()
 
 def send_data(ip, port, data):
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((ip, port))
-    client_socket.send(data.encode('utf-8'))
-    client_socket.close()
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    try:
+        s.connect((ip, port))
+        print(s.send(data.encode('utf-8')))
+    except socket.error as e:
+        print(str(e))
+    s.close()
 
 if __name__ == "__main__":
     host = '0.0.0.0'  # Listen on all available network interfaces
@@ -39,16 +43,15 @@ if __name__ == "__main__":
 
     send_data('127.0.0.1', 42069, 'Hello from the server!')
 
-    server_socket = start_tcp_server(host, port)
+    #server_socket = start_tcp_server(host, port)
 
-    while True:
-        # Accept a connection from a client
-        client_socket, client_address = server_socket.accept()
+    # while True:
+    #     # Accept a connection from a client
+    #     client_socket, client_address = server_socket.accept()
 
+    #     print(f"Accepted connection from {client_address}")
 
-        print(f"Accepted connection from {client_address}")
+    #     # Handle the client in a separate function
+    #     #handle_client(client_socket)
 
-        # Handle the client in a separate function
-        #handle_client(client_socket)
-
-        # Example of sending data to a specific IP and port
+    #     # Example of sending data to a specific IP and port
