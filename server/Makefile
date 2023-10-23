@@ -46,10 +46,15 @@ $(BUILD_DIR)/sqlite/%.o: $(SRC_DIR)/include/sqlite/%.c | $(BUILD_DIR)/sqlite
 
 # Build
 build: $(C_OBJECTS) $(CPP_OBJECTS)
-	$(CXX) $(CXXFLAGS) $(CPP_OBJECTS) $(C_OBJECTS) -o $(TARGET) & mv $(TARGET) $(BIN_DIR)/
+	$(CXX) $(CXXFLAGS) $(CPP_OBJECTS) $(C_OBJECTS) -o $(BIN_DIR)/$(TARGET)
 
 # Clean up
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 
 .PHONY: all clean
+
+# Ensure the directories are created before building
+$(C_OBJECTS): | $(OBJ_DIR)
+$(CPP_OBJECTS): | $(OBJ_DIR)
+$(BIN_DIR)/$(TARGET): | $(BIN_DIR)
