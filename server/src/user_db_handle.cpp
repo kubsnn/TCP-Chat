@@ -52,8 +52,7 @@ bool UserDbHandle::add(const User& user) const {
     return true;
 }
 
-bool UserDbHandle::exists(const std::string &username) const
-{
+bool UserDbHandle::exists(const std::string& username) const {
     static constexpr auto query = "SELECT COUNT(*) FROM USERS WHERE USERNAME = ?;";
     sqlite3_stmt* stmt;
 
@@ -73,8 +72,7 @@ bool UserDbHandle::exists(const std::string &username) const
     return false;
 }
 
-const User UserDbHandle::getById(int id) const
-{
+const User UserDbHandle::getById(int id) const {
     static constexpr auto query = "SELECT ID, USERNAME, PASSWORDHASH FROM USERS WHERE ID = ?;";
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -95,9 +93,32 @@ const User UserDbHandle::getById(int id) const
     return User("", "", -1);
 }
 
-const User UserDbHandle::getByName(const std::string &username) const
-{
-    return User("", "");
+const User UserDbHandle::getByName(const std::string &username) const {
+    static constexpr auto query = "SELECT ID, USERNAME, PASSWORDHASH FROM USERS WHERE USERNAME = ?;";
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr);
+
+    if (rc != SQLITE_OK) {
+        throw std::runtime_error("cannot run query; getByName");
+    }
+
+    sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_STATIC);
+
+    rc = sqlite3_step(stmt);
+
+    if (rc == SQLITE_ROW) {
+        auto id = sqlite3_column_int(stmt, 0);
+        auto username = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+        auto password_hash = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+        User user = {username, password_hash, id};
+        sqlite3_finalize(stmt);
+        return user;
+    }
+
+    sqlite3_finalize(stmt);
+    throw std::runtime_error("user does not exist");
+
+    return {"", "", -1};
 }
 
 bool UserDbHandle::verify(const User &credentials) const

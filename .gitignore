@@ -32,3 +32,4 @@
 *.app
 server/src/server
 server/src/client
+server/bin/server

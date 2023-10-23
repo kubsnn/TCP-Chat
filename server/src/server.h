@@ -15,9 +15,6 @@
 
 
 class Server {
-    static void handleClient(Client client);
-    static std::unordered_map<int, bool> logged_;
-
 public:
     Server(const char* ip, int port);
     ~Server();
@@ -29,6 +26,7 @@ private:
     void buildServer();
     void onInterrupt(int signum);
 
+    std::unordered_map<std::string, Client> users_online_;
     int sockfd_;
     sockaddr_in addr_;
 };

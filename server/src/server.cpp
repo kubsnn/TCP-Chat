@@ -1,4 +1,5 @@
 #include "server.h"
+#include "client_handler.h"
 #include <cstring>
 #include <iostream>
 #include <thread>
@@ -28,7 +29,9 @@ void Server::run() {
 
     while (true) {
         auto client = createClient();
-        std::thread(handleClient, client).detach();
+        std::thread([client]() {
+            ClientHandler(client).run();
+        }).detach();
     }
 
     close(sockfd_);
@@ -63,24 +66,6 @@ void Server::buildServer() {
     if (listen(sockfd_, 5) < 0) {
         std::cerr << "listen error" << std::endl;
         return;
-    }
-}
- 
-void Server::handleClient(Client client) {
-    std::cout << "client: " << client.socket().fd() << ", ip: " << client.ip() << " connected" << std::endl;
-    while (true) {
-        try {
-            json data = client.socket().read();
-
-            if (data["action"].get<json::number>() == 1) {
-                // lets forward
-                int fd = data["who"].get<json::number>();
-                Client(fd, sockaddr_in{}).socket().write(data["message"].get<json::string>());
-            }
-
-        } catch (const std::exception& ex) { // socket closed
-            break;
-        }
     }
 }
 
