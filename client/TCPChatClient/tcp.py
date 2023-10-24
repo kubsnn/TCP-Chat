@@ -49,6 +49,9 @@ def send_data(ip, port, data):
         resolvedIP = resolve_to_ip(ip)
         s.connect((resolvedIP, port))
         print(s.sendall(data.encode('utf-8')))
+        #wait for response
+        response = s.recv(1024)
+        print(response.decode('utf-8'))
     except socket.error as e:
         print(str(e))
     s.close()

@@ -54,9 +54,10 @@ def initProjectPath():
 def startApp():
     initProjectPath()
 
+
     # Start the TCP server on different thread
-    server_thread = threading.Thread(target=serve)
-    server_thread.start()
+    #server_thread = threading.Thread(target=serve)
+    #server_thread.start()
 
     # Start the Eel web app
     try:
@@ -64,8 +65,14 @@ def startApp():
         eel.init("web")
         eel.start("index.html")
     except (SystemExit, MemoryError, KeyboardInterrupt):
+
         #Handle errors and the potential hanging python.exe process
-        os.system('taskkill /F /IM python.exe /T')
+        #on windows:
+        if os.name == 'nt':
+            os.system('taskkill /F /IM python.exe /T')
+        #on unix:
+        else:
+            os.system('pkill -f python')
 
 
 
