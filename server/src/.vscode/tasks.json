@@ -17,6 +17,7 @@
                 "controller.cpp",
                 "client.cpp",
                 "wrappers.cpp",
+                "cache.cpp",
                 "user_db_handle.cpp",
                 "user.cpp",
                 "lib/sqlite3.o",

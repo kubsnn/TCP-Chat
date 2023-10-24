@@ -21,6 +21,7 @@ public:
     const char* ip() const;
     const std::string& username() const;
     
+    void setUsername(std::string username);
 
     void disconnect();
 

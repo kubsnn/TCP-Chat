@@ -4,6 +4,7 @@
 
 #include "client.h"
 #include "controller.h"
+#include "cache.h"
 #include <jaszyk/json.hpp>
 #include <string>
 
@@ -11,7 +12,7 @@ class ClientHandler {
 
     static const json invalidInputJsonError();
 public:
-    ClientHandler(Client client);
+    ClientHandler(Client client, Cache& cache);
 
     void run();
 private:
@@ -19,6 +20,7 @@ private:
     json execute(const json& query);
 
     Client client_;
+    Cache& cache_;
 };
 
 #endif //!__CLIENT_HANDLER_H__

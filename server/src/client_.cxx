@@ -13,6 +13,7 @@
 #include <thread>
 #include <jaszyk/json.hpp>
 #include "wrappers.h"
+#include "logger.h"
 
 using jaszyk::json;
 
@@ -53,11 +54,12 @@ public:
 
             if (msg == "sendto") {
                 data["action"] = "sendto";
-                json::number fd = 0;
-                std::cin >> fd;
-                data["who"] = fd;
+                std::string who;
+                std::cin >> who;
+                data["who"] = who;
 
                 std::string line;
+                std::cin.ignore(1);
                 std::getline(std::cin, line);
                 data["message"] = std::move(line);
 
@@ -85,6 +87,11 @@ public:
                 socket_.write(data);
                 msg = "";
             }
+            if (msg == "online") {
+                data["action"] = "usersOnline";
+                socket_.write(data);
+                msg = "";
+            }
         }
 
         socket_.close();
@@ -108,6 +115,14 @@ private:
     Socket socket_;
 };
 
-int main(int, char*[]) {
-    Client("127.0.0.1", 1100).run();
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        Client("127.0.0.1", 42069).run();
+    } else {
+        const char* ip = argv[1];
+        int port = atoi(argv[2]);
+        
+        logger.info() << "starting on " << ip << ':' << port << std::endl;
+        Client(ip, port).run();
+    }
 }

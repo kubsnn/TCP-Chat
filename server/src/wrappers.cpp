@@ -2,7 +2,7 @@
 
 static std::function<void(int)> handler_;
 
-void signal_wrapper(int signum) {
+static void signal_wrapper(int signum) {
     if (handler_) {
         handler_(signum);
     }
@@ -64,15 +64,19 @@ namespace {
         return response;
     }
 
-    inline void skip_bytes(int fd) {
-        
+    inline void skip_bytes(int fd, int bytes_left) {
+        char buff[512];
+        while (bytes_left > 0) {
+            int count = ::read(fd, buff, std::min((int)sizeof(buff), bytes_left));
+            bytes_left -= count;
+        }
     }
 }
 
 json Socket::read() const {
     int size = read_header(sockfd_);
     if (size > 65536) {
-        
+        skip_bytes(sockfd_, size);
         return data_to_long();
     }
     return read_data(sockfd_, size);

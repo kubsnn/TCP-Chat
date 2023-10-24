@@ -36,6 +36,10 @@ const std::string& Client::username() const {
     return username_;
 }
 
+void Client::setUsername(std::string username) {
+    username_ = std::move(username);
+}
+
 void Client::disconnect() {
     socket_.close();
 }

@@ -1,19 +1,21 @@
 #include "client_handler.h"
 #include <iostream>
+#include "logger.h"
 
 const json ClientHandler::invalidInputJsonError() {
     json data = json::dictionary();
     data["error"] = true;
-    data["message"] = std::string("Received json doesn't match requirements.");
+    data["message"] = std::string("Received json doesn't match server's requirements.");
     return data;
 }
 
-ClientHandler::ClientHandler(Client client)
-    : client_(std::move(client))
+ClientHandler::ClientHandler(Client client, Cache& cache)
+    : client_(std::move(client)), cache_(cache)
 { }
 
 void ClientHandler::run() {
-    std::cout << "client: " << client_.socket().fd() << ", ip: " << client_.ip() << " connected" << std::endl;
+    logger.info() << client_.ip() << " connected on socket " << client_.socket().fd() << '.' << std::endl;
+
     while (true) {
         try {
             json request = client_.socket().read();
@@ -37,16 +39,19 @@ void ClientHandler::run() {
         }
     }
 
-    std::cout << "client: " << client_.socket().fd() << " disconnected" << std::endl;
+    logger.info() << client_.ip() << " disconnected from socket " << client_.socket().fd() << '.' << std::endl;
+    if (client_.username() != "" && cache_.isUserOnline(client_.username())) { 
+        cache_.removeUserOnline(client_.username());
+    }
     client_.disconnect();
 }
 
 bool ClientHandler::isValidRequest(const json& data) {
     if (!data.is<json::dictionary>()) return false;
     const auto& dict = data.get<json::dictionary>();
-    return dict.contains("action") && Controller(client_).containsMethod(dict["action"].get<std::string>());
+    return dict.contains("action") && Controller(client_, cache_).containsMethod(dict["action"].get<std::string>());
 }
 
 json ClientHandler::execute(const json& query) {
-    return Controller(client_).execute(query);
+    return Controller(client_, cache_).execute(query);
 }

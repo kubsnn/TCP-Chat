@@ -1,3 +1,5 @@
+#define LOG_TO_FILE 1
+#include "logger.h"
 #include "server.h"
 #include "user_db_handle.h"
 
