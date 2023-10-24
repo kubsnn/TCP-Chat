@@ -16,8 +16,10 @@ Server::Server(const char* ip, int port)
     addr_.sin_addr.s_addr = inet_addr(ip);
 
     register_signal(SIGINT, [this](int signum) {
-        std::cout << "server closed due to an interrupt" << std::endl;
-            this->onInterrupt(SIGINT);
+        std::cout << "\n";
+        logger.warning() << "SIGINT has been called. Closing server..." << std::endl;
+        this->onInterrupt(SIGINT);
+        logger.info() << "Sockets closed. Exiting..." << std::endl;
         exit(signum);
     });
 }
@@ -78,6 +80,10 @@ void Server::buildServer() {
 }
 
 void Server::onInterrupt(int signum) {
+    auto clients = cache_.usersOnline();
+    for (auto& client : clients) {
+        close(client.socket().fd());
+    }
     close(sockfd_);
     sockfd_ = -1;
 }
