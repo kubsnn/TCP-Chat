@@ -1,25 +1,25 @@
+# Makefile for installing npm and its dependencies, building the app, and running a Python script
 
-all:
+# Define the default target (the first one in the file)
+all: install build run
 
+# Target for installing npm and its dependencies
+install:
+	cd TCPChatClient/web-src && npm install
+	cd TCPChatClient && pip install -r requirements.txt
+
+# Target for building the app using npm
 build:
-	@echo "Building client..."
-	@cd TCPChatClient/web-src && npm install
-	@cd TCPChatClient/web-src && npm run build
+	cd TCPChatClient/web-src && npm run build
 
-
+# Target for starting the Python script
 run:
-	@echo "Running client..."
-	@cd python TCPChatClient
+	python TCPChatClient
 
+# Target to clean all Node.js files and remove the 'web' directory
 clean:
-	@echo "Cleaning client..."
-	@cd TCPChatClient/web-src && rm -rf node_modules
-	@cd TCPChatClient/web-src && rm -rf build
-	@cd TCPChatClient/web-src && rm -rf package-lock.json
-	@cd TCPChatClient/web-src && rm -rf yarn.lock
-	@cd TCPChatClient/web-src && rm -rf .yarn-integrity
-	@cd TCPChatClient/web-src && rm -rf .yarnrc.yml
-	@cd TCPChatClient/web-src && rm -rf .yarn
-	@cd TCPChatClient/web-src && rm -rf .pnp.js
-	@cd TCPChatClient/web-src && rm -rf .pnp.cjs
-	@cd TCPChatClient/web-src && rm -rf .yarnrc
+	cd TCPChatClient/web-src && npm clean-install --yes
+	rm -rf TCPChatClient/web
+
+# Define phony targets to ensure these targets are always executed
+.PHONY: install build run clean

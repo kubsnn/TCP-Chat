@@ -1,6 +1,7 @@
 import socket
 import ipaddress
 
+
 def resolve_to_ip(host):
     try:
         # Check if the provided input is already an IP address
@@ -51,6 +52,7 @@ def send_data(ip, port, data):
     except socket.error as e:
         print(str(e))
     s.close()
+
 
 if __name__ == "__main__":
     host = '0.0.0.0'  # Listen on all available network interfaces
