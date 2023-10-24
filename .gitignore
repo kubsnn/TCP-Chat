@@ -34,3 +34,6 @@ server/src/server
 server/src/client
 server/bin/server
 server/server
+
+client/build/
+client/dist

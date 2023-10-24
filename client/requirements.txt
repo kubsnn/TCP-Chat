@@ -1,4 +1,0 @@
-Eel>=0.16.0, <0.17
-pyinstaller==6.1.0
-pdoc3==0.10.0
-python-decouple>=3.4, <4.0
