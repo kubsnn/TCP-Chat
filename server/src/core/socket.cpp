@@ -1,4 +1,12 @@
-#include "wrappers.h"
+#include "socket.h"
+#include <csignal>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <iostream>
+#include <exception>
 
 static std::function<void(int)> handler_;
 
@@ -113,11 +121,6 @@ bool Socket::write(const json& data) const {
 void Socket::close() {
     ::close(sockfd_);
     sockfd_ = -1;
-}
-
-void Socket::ping() const {
-    static constexpr auto msg = "PING";
-    int count = ::write(sockfd_, msg, 5);
 }
 
 int Socket::fd() const {

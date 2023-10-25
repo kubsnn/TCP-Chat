@@ -8,6 +8,8 @@
 #include <jaszyk/json.hpp>
 #include <string>
 
+using json = jaszyk::json;
+
 class ClientHandler {
 
     static const json invalidInputJsonError();

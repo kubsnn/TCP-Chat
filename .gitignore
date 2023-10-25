@@ -35,3 +35,5 @@ server/src/client
 server/bin/server
 server/server
 server/log.txt
+server/src/server
+.gitignore

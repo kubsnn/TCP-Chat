@@ -1,7 +1,7 @@
-#define LOG_TO_FILE 1
+#define LOG_TO_FILE 0
 #include "logger.h"
 #include "server.h"
-#include "user_db_handle.h"
+#include "core/database/user_db_handle.h"
 
 int main(int argc, char* argv[]) {
     configure_databases();

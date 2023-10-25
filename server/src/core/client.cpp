@@ -1,5 +1,7 @@
 #include "client.h"
 #include <mutex>
+#include <arpa/inet.h>
+#include <cstring>
 
 Client::Client(int sockfd, sockaddr_in addr)
     : socket_(sockfd)

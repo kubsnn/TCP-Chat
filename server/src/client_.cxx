@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <thread>
 #include <jaszyk/json.hpp>
-#include "wrappers.h"
+#include "core/socket.h"
 #include "logger.h"
 
 using jaszyk::json;

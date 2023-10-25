@@ -8,6 +8,7 @@
 #include <mutex>
 #include <shared_mutex>
 
+// Thread-safe Cachce class
 class Cache {
 public:
     bool isUserOnline(const std::string& username);

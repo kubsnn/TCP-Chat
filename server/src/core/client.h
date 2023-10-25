@@ -1,13 +1,8 @@
 #pragma once
 
-#include <cstring>
+#include "socket.h" 
 #include <netinet/in.h>
-#include "wrappers.h" // You need to include the appropriate header for the Socket class.
-
-enum class ResultCode {
-    FAIL = false,
-    OK = true
-};
+#include <string>
 
 class Client {
     static constexpr size_t kIpSize = sizeof("xxx.xxx.xxx.xxx");

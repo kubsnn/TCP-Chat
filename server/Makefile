@@ -7,12 +7,14 @@ BIN_DIR = bin
 # Compiler and flags
 CC = gcc
 CXX = g++
-CFLAGS = -Wall -O3
+CFLAGS = -O3
 CXXFLAGS = -Wall -Wunused-variable -fdiagnostics-color=always -std=c++2a -lpthread -I'$(SRC_DIR)/include' -g
 
 # Source files
-CPP_SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
-HPP_HEADERS = $(wildcard $(SRC_DIR)/*.hpp)
+CPP_SOURCES = $(wildcard $(SRC_DIR)/*.cpp) \
+              $(wildcard $(SRC_DIR)/core/*.cpp) \
+              $(wildcard $(SRC_DIR)/core/database/*.cpp)
+
 C_SOURCES = $(wildcard $(SRC_DIR)/include/sqlite/*.c)
 
 # Object files
@@ -22,23 +24,19 @@ C_OBJECTS = $(patsubst $(SRC_DIR)/include/sqlite/%.c, $(BUILD_DIR)/sqlite/%.o, $
 # Binary executable name
 TARGET = server
 
+$(shell mkdir -p $(BUILD_DIR))
+$(shell mkdir -p $(BUILD_DIR)/core)
+$(shell mkdir -p $(BUILD_DIR)/core/database)
+$(shell mkdir -p $(BUILD_DIR)/sqlite)
+$(shell mkdir -p $(BIN_DIR))
+
 # Default target
-all: $(BIN_DIR) build
+all: build
+
 
 # Rule to compile C++ source files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Create the 'build' and 'bin' directories
-$(BUILD_DIR):
-	mkdir -p $@
-
-$(BIN_DIR):
-	mkdir -p $@
-
-# Rule to create the 'sqlite' directory
-$(BUILD_DIR)/sqlite:
-	mkdir -p $@
 
 # Rule to compile C source files
 $(BUILD_DIR)/sqlite/%.o: $(SRC_DIR)/include/sqlite/%.c | $(BUILD_DIR)/sqlite
@@ -53,8 +51,3 @@ clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 
 .PHONY: all clean
-
-# Ensure the directories are created before building
-$(C_OBJECTS): | $(OBJ_DIR)
-$(CPP_OBJECTS): | $(OBJ_DIR)
-$(BIN_DIR)/$(TARGET): | $(BIN_DIR)

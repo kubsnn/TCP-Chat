@@ -1,6 +1,6 @@
 #include "client_handler.h"
 #include <iostream>
-#include "logger.h"
+#include "../logger.h"
 
 const json ClientHandler::invalidInputJsonError() {
     json data = json::dictionary();
@@ -49,9 +49,9 @@ void ClientHandler::run() {
 bool ClientHandler::isValidRequest(const json& data) {
     if (!data.is<json::dictionary>()) return false;
     const auto& dict = data.get<json::dictionary>();
-    return dict.contains("action") && Controller(client_, cache_).containsMethod(dict["action"].get<std::string>());
+    return dict.contains("action") && Controller(client_, cache_).hasMethod(dict["action"].get<std::string>());
 }
 
 json ClientHandler::execute(const json& query) {
-    return Controller(client_, cache_).execute(query);
+    return Controller(client_, cache_).invoke(query["action"].get<std::string>(), query);
 }
