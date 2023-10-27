@@ -57,7 +57,13 @@
         "cinttypes": "cpp",
         "optional": "cpp",
         "condition_variable": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "chrono": "cpp",
+        "charconv": "cpp",
+        "format": "cpp",
+        "iomanip": "cpp",
+        "span": "cpp",
+        "shared_mutex": "cpp"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.default.includePath": [

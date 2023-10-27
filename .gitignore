@@ -37,3 +37,5 @@ server/server
 
 client/build/
 client/dist
+server/log.txt
+server/src/server

@@ -62,6 +62,7 @@ namespace jaszyk {
 				}
 			}
 
+			throw std::runtime_error("Key does not exist!");
 			return data_.end()->second;
 		}
 

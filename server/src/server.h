@@ -2,9 +2,10 @@
 #ifndef __SERVER_H__
 #define __SERVER_H__
 
-#include "wrappers.h"
-#include "user_db_handle.h"
-#include "client.h"
+#include "core/database/user_db_handle.h"
+#include "core/client.h"
+#include "core/socket.h"
+#include "core/cache.h"
 
 #include <jaszyk/json.hpp>
 #include <sys/types.h>
@@ -26,8 +27,10 @@ private:
     void buildServer();
     void onInterrupt(int signum);
 
-    std::unordered_map<std::string, Client> users_online_;
+    Cache cache_;
+    std::string ip_;
     int sockfd_;
+    int port_;
     sockaddr_in addr_;
 };
 

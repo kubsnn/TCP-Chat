@@ -2,19 +2,10 @@
 #ifndef __WRAPPERS_H__
 #define __WRAPPERS_H__
 
-#include "constants.h"
-#include <csignal>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <functional>
-#include <exception>
-#include <iostream>
+#include "utils/constants.h"
 #include <jaszyk/json.hpp>
+#include <functional>
 #include <mutex>
-#include <unordered_map>
 
 using jaszyk::json;
 
@@ -30,7 +21,6 @@ public:
     json read() const;
     bool write(const json& data) const;
     void close();
-    void ping() const;
     int fd() const;
 
     Socket& operator=(Socket&& other) noexcept;

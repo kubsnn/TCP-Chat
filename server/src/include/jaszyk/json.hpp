@@ -178,6 +178,10 @@ namespace jaszyk {
 			else if (_Idx == 3) _Os << (std::get<bool>(_This) ? "true" : "false");
 			else if (_Idx == 4) {
 				auto& _Array = std::get<json_array>(_This);
+				if (_Array.empty()) {
+					_Os << "[]";
+					return _Os;
+				}
 				_Os << "[ ";
 				for (const auto& v : _Array) {
 					_Os << v << ", ";
@@ -186,6 +190,10 @@ namespace jaszyk {
 			}
 			else if (_Idx == 5) {
 				auto& _Dict = std::get<json_map>(_This);
+				if (_Dict.empty()) {
+					_Os << "{}";
+					return _Os;
+				}
 				_Os << "{ ";
 				for (const auto& [k, v] : _Dict) {
 					_Os << '"' << k << "\" : " << v << ", ";

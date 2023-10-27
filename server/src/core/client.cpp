@@ -1,5 +1,7 @@
 #include "client.h"
 #include <mutex>
+#include <arpa/inet.h>
+#include <cstring>
 
 Client::Client(int sockfd, sockaddr_in addr)
     : socket_(sockfd)
@@ -34,6 +36,10 @@ const char* Client::ip() const {
 
 const std::string& Client::username() const {
     return username_;
+}
+
+void Client::setUsername(std::string username) {
+    username_ = std::move(username);
 }
 
 void Client::disconnect() {

@@ -1,8 +1,16 @@
-#include "wrappers.h"
+#include "socket.h"
+#include <csignal>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <iostream>
+#include <exception>
 
 static std::function<void(int)> handler_;
 
-void signal_wrapper(int signum) {
+static void signal_wrapper(int signum) {
     if (handler_) {
         handler_(signum);
     }
@@ -64,15 +72,19 @@ namespace {
         return response;
     }
 
-    inline void skip_bytes(int fd) {
-        
+    inline void skip_bytes(int fd, int bytes_left) {
+        char buff[512];
+        while (bytes_left > 0) {
+            int count = ::read(fd, buff, std::min((int)sizeof(buff), bytes_left));
+            bytes_left -= count;
+        }
     }
 }
 
 json Socket::read() const {
     int size = read_header(sockfd_);
     if (size > 65536) {
-        
+        skip_bytes(sockfd_, size);
         return data_to_long();
     }
     return read_data(sockfd_, size);
@@ -109,11 +121,6 @@ bool Socket::write(const json& data) const {
 void Socket::close() {
     ::close(sockfd_);
     sockfd_ = -1;
-}
-
-void Socket::ping() const {
-    static constexpr auto msg = "PING";
-    int count = ::write(sockfd_, msg, 5);
 }
 
 int Socket::fd() const {
