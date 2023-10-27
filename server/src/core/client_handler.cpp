@@ -11,16 +11,26 @@ const json ClientHandler::invalidInputJsonError() {
 
 ClientHandler::ClientHandler(Client client, Cache& cache)
     : client_(std::move(client)), cache_(cache)
-{ }
+{ 
+    crypto_.create();
+}
 
 void ClientHandler::run() {
     logger.info() << client_.ip() << " connected on socket " << client_.socket().fd() << '.' << std::endl;
 
+    if (!initializeClientPublicKey()) {
+        logger.info() << client_.ip() << " disconnected from socket " << client_.socket().fd() << '.' << std::endl;
+        client_.disconnect();
+        return;
+    }
+
+    logger.info() << client_.ip() << " has public key:\n" << client_.crypto().public_key() << std::endl;
+
     while (true) {
         try {
-            json request = client_.socket().read();
+            json request = receiveRequest();
             if (!isValidRequest(request)) {
-                if (!client_.socket().write(invalidInputJsonError())) {
+                if (!sendResponse(invalidInputJsonError())) {
                     break;
                 }
                 continue;
@@ -32,7 +42,7 @@ void ClientHandler::run() {
                 break;
             }
             result["response"] = true;
-            client_.socket().write(result);
+            sendResponse(result);
 
         } catch (const std::exception& ex) { // socket closed
             break;
@@ -54,4 +64,47 @@ bool ClientHandler::isValidRequest(const json& data) {
 
 json ClientHandler::execute(const json& query) {
     return Controller(client_, cache_).invoke(query["action"].get<std::string>(), query);
+}
+
+bool ClientHandler::sendResponse(const json& response) {
+    return client_.writeEncrypted(response.to_string());
+}
+
+json ClientHandler::receiveRequest() {
+    std::cout << "trying to read" << std::endl;
+    return json::parse(client_.socket().read(crypto_));
+}
+
+bool ClientHandler::initializeClientPublicKey() {
+    json message = json::dictionary();
+    message["public_key"] = crypto_.public_key();
+    message["message"] = "Waiting for your public key...";
+
+    const std::string msg = message.to_string();
+    message = false; // free json
+
+    while (true) {
+        try {
+            if (!client_.socket().write(msg)) {
+                return false;
+            }
+
+            auto response = json::parse((client_.socket().read(crypto_)));
+            std::cout << response << std::endl;
+
+            if (!response.is<json::dictionary>()) continue;
+            
+            const auto& dict = response.get<json::dictionary>();
+            if (!dict.contains("public_key")) continue;
+
+            if (!Crypto::verifyKey(dict["public_key"].get<std::string>())) continue;
+
+            client_.setPublicKey(dict["public_key"].get<std::string>());
+            return true;
+            
+        } catch (const std::exception& ex) {
+            return false;
+        }
+    }
+    return false;
 }

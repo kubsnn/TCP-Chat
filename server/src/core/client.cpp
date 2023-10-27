@@ -26,6 +26,10 @@ Client::Client(const Client& other)
     std::copy(&other.ip_[0], &other.ip_[kIpSize], &ip_[0]);
 }
 
+bool Client::writeEncrypted(const std::string &data) const {
+    return socket_.write(data, crypto_);
+}
+
 const Socket& Client::socket() const {
     return socket_;
 }
@@ -38,7 +42,16 @@ const std::string& Client::username() const {
     return username_;
 }
 
-void Client::setUsername(std::string username) {
+const Crypto &Client::crypto() const {
+    return crypto_;
+}
+
+void Client::setPublicKey(const std::string& key) {
+    crypto_ = Crypto(key);
+}
+
+void Client::setUsername(std::string username)
+{
     username_ = std::move(username);
 }
 

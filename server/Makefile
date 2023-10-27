@@ -1,6 +1,7 @@
 # Makefile for a C/C++ project
 
 SRC_DIR = src
+LIB_DIR = src/lib
 BUILD_DIR = build
 BIN_DIR = bin
 
@@ -13,9 +14,13 @@ CXXFLAGS = -Wall -Wunused-variable -fdiagnostics-color=always -std=c++2a -lpthre
 # Source files
 CPP_SOURCES = $(wildcard $(SRC_DIR)/*.cpp) \
               $(wildcard $(SRC_DIR)/core/*.cpp) \
-              $(wildcard $(SRC_DIR)/core/database/*.cpp)
+              $(wildcard $(SRC_DIR)/core/database/*.cpp) \
+              $(wildcard $(SRC_DIR)/core/utils/*.cpp)
 
 C_SOURCES = $(wildcard $(SRC_DIR)/include/sqlite/*.c)
+
+# lib files
+LIBS = $(wildcard $(LIB_DIR)/*.so.3)
 
 # Object files
 CPP_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(CPP_SOURCES))
@@ -27,6 +32,7 @@ TARGET = server
 $(shell mkdir -p $(BUILD_DIR))
 $(shell mkdir -p $(BUILD_DIR)/core)
 $(shell mkdir -p $(BUILD_DIR)/core/database)
+$(shell mkdir -p $(BUILD_DIR)/core/utils)
 $(shell mkdir -p $(BUILD_DIR)/sqlite)
 $(shell mkdir -p $(BIN_DIR))
 
@@ -44,7 +50,7 @@ $(BUILD_DIR)/sqlite/%.o: $(SRC_DIR)/include/sqlite/%.c | $(BUILD_DIR)/sqlite
 
 # Build
 build: $(C_OBJECTS) $(CPP_OBJECTS)
-	$(CXX) $(CXXFLAGS) $(CPP_OBJECTS) $(C_OBJECTS) -o $(BIN_DIR)/$(TARGET)
+	$(CXX) $(CXXFLAGS) $(CPP_OBJECTS) $(C_OBJECTS) $(LIBS) -o $(BIN_DIR)/$(TARGET)
 
 # Clean up
 clean:

@@ -72,7 +72,7 @@ json Controller::sendTo(const json& data) const {
 
     auto user = cache_.getUser(receiver_name);
 
-    bool success = user.socket().write(data["message"].get<std::string>());
+    //bool success = user.socket().write(data["message"].get<std::string>());
     
     
     return ok();

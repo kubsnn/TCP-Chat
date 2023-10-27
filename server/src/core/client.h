@@ -1,6 +1,7 @@
 #pragma once
 
-#include "socket.h" 
+#include "socket.h"
+#include "utils/crypto.h"
 #include <netinet/in.h>
 #include <string>
 
@@ -12,10 +13,14 @@ public:
     Client(Client&& other) noexcept;
     Client(const Client& other);
 
+    bool writeEncrypted(const std::string& data) const;
+
     const Socket& socket() const;
     const char* ip() const;
     const std::string& username() const;
+    const Crypto& crypto() const;
     
+    void setPublicKey(const std::string& key);
     void setUsername(std::string username);
 
     void disconnect();
@@ -27,4 +32,5 @@ private:
     char* ip_;
     Socket socket_;
     std::string username_;
+    Crypto crypto_;
 };
