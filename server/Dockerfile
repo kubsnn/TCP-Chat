@@ -13,4 +13,4 @@ RUN make
 EXPOSE 42069
 
 # Start the server (replace with your server's command)
-CMD ["./bin/server", "'0.0.0.0'", "42069"]
+CMD ["./bin/server"]
