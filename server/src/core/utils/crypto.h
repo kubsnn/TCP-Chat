@@ -9,6 +9,10 @@
 
 class Crypto {
 public:
+    static constexpr int key_size = 2048;
+    static constexpr int max_data_size = 245;
+    static constexpr int rsa_size = key_size / 8;
+
     Crypto();
     Crypto(const std::string& public_key);
     Crypto(const Crypto& other) = delete;

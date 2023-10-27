@@ -56,4 +56,7 @@ build: $(C_OBJECTS) $(CPP_OBJECTS)
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 
+run: build
+	./$(BIN_DIR)/$(TARGET)
+
 .PHONY: all clean

@@ -91,20 +91,19 @@ std::string Socket::read(const Crypto &crypto) const {
         skip_bytes(sockfd_, size);
         return "{\"error\":true,\"result\":\"fail\",\"message\":\"request too big\"}";
     }
-    std::cout << "reading " << size << " bytes" << std::endl;
-    char buff[256];
+    char buff[Crypto::rsa_size];
     std::string data;
     data.resize(size);
     char* ptr = data.data();
     int bytes_left = size;
     while (bytes_left > 0) {
+        std::cout << "reading " << Crypto::rsa_size << " bytes" << std::endl;
         int count = ::read(sockfd_, buff, std::min((int)sizeof(buff), bytes_left));
-        std::cout << "reading " << count << " bytes" << std::endl;
         if (count <= 0) {
             throw std::runtime_error("connection has been lost");
         }
         crypto.decrypt(buff, count, ptr);
-        ptr += 245;
+        ptr += Crypto::max_data_size;
         bytes_left -= count;
     }
     return data;
@@ -144,33 +143,27 @@ bool Socket::write(const std::string& data) const {
 bool Socket::write(const std::string &data, const Crypto& crypto) const {
     std::lock_guard<std::mutex> lock(mutexes[sockfd_]);
 
-    static constexpr int block_size = 245;
     int size = data.size() + 1;
-    int blocks = size / 256 + (size % 256 ? 1 : 0);
+    int blocks = size / Crypto::rsa_size + (size % Crypto::rsa_size ? 1 : 0);
     
-    // max size of data
-    int total_size = blocks * 256;
+    // max size of encrypted data
+    int total_size = blocks * Crypto::rsa_size;
 
     std::cout << "to write: " << total_size << " bytes" << std::endl;
     write_header(sockfd_, total_size);
 
     const char* ptr = data.c_str();
 
-    char buff[256];
+    char buff[Crypto::rsa_size];
     while (size > 0) {
         std::fill(std::begin(buff), std::end(buff), '\0');
-        int count = std::min(size, block_size);
+        int count = std::min(size, Crypto::max_data_size);
         crypto.encrypt(ptr, count, buff); 
-        std::cout << "writing " << count << " bytes" << std::endl;
 
-        int r = 0;
-        if (!(r = write_data(sockfd_, buff, 256))) {
-            return false;
-        }
+        std::cout << "writing " << Crypto::rsa_size << " bytes" << std::endl;
+        if (!write_data(sockfd_, buff, Crypto::rsa_size)) return false;
 
-        std::cout << "written " << r << " bytes" << std::endl;
-
-        ptr += block_size;
+        ptr += Crypto::max_data_size;
         size -= count;
     }
 

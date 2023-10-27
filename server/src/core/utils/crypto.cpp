@@ -46,7 +46,7 @@ void Crypto::create() {
     RSA* rsa = RSA_new();
     BIGNUM* bne = BN_new();
     BN_set_word(bne, RSA_F4);
-    RSA_generate_key_ex(rsa, 2048, bne, nullptr);
+    RSA_generate_key_ex(rsa, key_size, bne, nullptr);
 
     private_key_ = rsa;
     
