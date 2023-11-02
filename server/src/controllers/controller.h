@@ -2,9 +2,9 @@
 #ifndef __CONTROLLER_H__
 #define __CONTROLLER_H__
 
-#include "icontroller.h"
-#include "client.h"
-#include "cache.h"
+#include <core/icontroller.h>
+#include <core/client.h>
+#include <core/cache.h>
 #include <jaszyk/json.hpp>
 
 class Controller : public IController {
@@ -12,8 +12,9 @@ public:
     Controller(Client& client, Cache& cache);
 
 private:
-    json registerUser(const json& data) const;
-    json loginUser(const json& data) const;
+    json signup(const json& data) const;
+    json signin(const json& data) const;
+    json signout(const json& data) const;
     json sendTo(const json& data) const;
     json usersOnline(const json& data) const;
 

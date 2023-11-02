@@ -10,6 +10,7 @@
                 "-std=c++2a",
                 "-lpthread",
                 "-I'include'",
+                "-I'.'",
                 "-g",
                 "main.cpp",
                 "server.cpp",
@@ -24,7 +25,7 @@
                 "core/utils/crypto.cpp",
                 "lib/sqlite3.o",
                 "lib/libcrypto.so.3",
-                "lib/libssl.so",
+                "lib/libssl.so.3",
                 "-o",
                 "server"
             ],
@@ -51,7 +52,7 @@
                 "core/socket.cpp",
                 "core/utils/crypto.cpp",
                 "lib/libcrypto.so.3",
-                "lib/libssl.so",
+                "lib/libssl.so.3",
                 "-o",
                 "client"
             ],

@@ -1,12 +1,11 @@
 #include "crypto.h"
 #include <filesystem>
+#include <iostream>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <iostream>
 #include <openssl/rsa.h>
 #include <openssl/bn.h>
 #include <openssl/err.h>
-#include <iostream>
 
 Crypto::Crypto() 
     : private_key_(nullptr), public_key_(nullptr)
@@ -27,6 +26,17 @@ Crypto::Crypto(const std::string& public_key) {
     BIO_free(bio);
 }
 
+Crypto::Crypto(const Crypto& other) 
+    : private_key_(nullptr), public_key_(nullptr)
+{
+    if (other.public_key_ != nullptr) {
+        public_key_ = copyPublicKey(other.public_key_);
+    }
+    if (other.private_key_ != nullptr) {
+        private_key_ = copyPrivateKey(other.private_key_);
+    }
+}
+
 Crypto::Crypto(Crypto&& other) noexcept {
     private_key_ = other.private_key_;
     public_key_ = other.public_key_;
@@ -36,10 +46,7 @@ Crypto::Crypto(Crypto&& other) noexcept {
 
 Crypto::~Crypto() {
     if (private_key_) RSA_free(private_key_);
-    if (public_key_) {
-        std::cout << "freeing public key" << std::endl;   
-        RSA_free(public_key_);
-    }
+    if (public_key_) RSA_free(public_key_);
 }
 
 void Crypto::create() {
@@ -112,8 +119,7 @@ void Crypto::encrypt(const char *data, int len, char* encrypted) const {
     if (public_key_ == nullptr) {
         throw std::runtime_error("public key is not set");
     }
-    int encrypted_size = RSA_size(public_key_);
-
+    //int encrypted_size = RSA_size(public_key_);
     int result = RSA_public_encrypt(len, reinterpret_cast<const unsigned char*>(data), reinterpret_cast<unsigned char*>(encrypted), public_key_, RSA_PKCS1_PADDING);
 
     if (result == -1) {
@@ -125,7 +131,7 @@ void Crypto::decrypt(const char *data, int len, char* decrypted) const {
     if (private_key_ == nullptr) {
         throw std::runtime_error("this is only encrypt only instance, cannot decrypt");
     }
-    int decrypted_size = RSA_size(private_key_);
+    //int decrypted_size = RSA_size(private_key_);
     int result = RSA_private_decrypt(len, reinterpret_cast<const unsigned char*>(data), reinterpret_cast<unsigned char*>(decrypted), private_key_, RSA_PKCS1_PADDING);
 
     if (result == -1) {
@@ -144,51 +150,52 @@ std::string Crypto::public_key() const {
     return key;
 }
 
-Crypto& Crypto::operator=(const Crypto &other) {
-    // copy public key
-    if (other.public_key_ != nullptr) {
-        RSA_free(public_key_);
-    }
+Crypto& Crypto::operator=(const Crypto& other) {
+    if (this == &other) return *this;
 
-    BIO* bio = BIO_new(BIO_s_mem());
-    PEM_write_bio_RSAPublicKey(bio, other.public_key_);
-
-    PEM_read_bio_RSAPublicKey(bio, &public_key_, nullptr, nullptr);
-
-    if (public_key_ == NULL) {
-        ERR_print_errors_fp(stderr);
-        exit(-1);
-    }
-
-    BIO_free(bio);
-
-    // copy private key
-    if (other.private_key_ != nullptr) {
-        RSA_free(private_key_);
-    }
-
-    bio = BIO_new(BIO_s_mem());
-    PEM_write_bio_RSAPrivateKey(bio, other.private_key_, nullptr, nullptr, 0, nullptr, nullptr);
-
-    PEM_read_bio_RSAPrivateKey(bio, &private_key_, nullptr, nullptr);
-
-    if (private_key_ == NULL) {
-        ERR_print_errors_fp(stderr);
-        exit(-1);
-    }
-
-    BIO_free(bio);
+    if (other.public_key_ != nullptr) RSA_free(public_key_);
+    if (other.private_key_ != nullptr) RSA_free(private_key_);
+    
+    copyPublicKey(other.public_key_);
+    copyPrivateKey(other.private_key_);
     
     return *this;
 }
 
-Crypto &Crypto::operator=(Crypto &&other) noexcept
-{
+Crypto& Crypto::operator=(Crypto &&other) noexcept {
     private_key_ = other.private_key_;
     public_key_ = other.public_key_;
     other.private_key_ = nullptr;
     other.public_key_ = nullptr;
     return *this;
+}
+
+RSA* Crypto::copyPublicKey(const RSA* key) const {
+    BIO* bio = BIO_new(BIO_s_mem());
+    PEM_write_bio_RSAPublicKey(bio, key);
+    RSA* rsa = nullptr;
+    PEM_read_bio_RSAPublicKey(bio, &rsa, nullptr, nullptr);
+    ERR_print_errors_fp(stderr);
+    BIO_free(bio);
+
+    if (rsa == nullptr) {
+        return nullptr;
+    }
+    return rsa;
+}
+
+RSA* Crypto::copyPrivateKey(const RSA* key) const {
+    BIO* bio = BIO_new(BIO_s_mem());
+    PEM_write_bio_RSAPrivateKey(bio, key, nullptr, nullptr, 0, nullptr, nullptr);
+    RSA* rsa = nullptr;
+    PEM_read_bio_RSAPrivateKey(bio, &rsa, nullptr, nullptr);
+    ERR_print_errors_fp(stderr);
+    BIO_free(bio);
+
+    if (rsa == nullptr) {
+        return nullptr;
+    }
+    return rsa;
 }
 
 bool Crypto::verifyKey(const std::string& key) {

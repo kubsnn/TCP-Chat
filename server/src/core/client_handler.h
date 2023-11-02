@@ -3,7 +3,7 @@
 #define __CLIENT_HANDLER_H__
 
 #include "client.h"
-#include "controller.h"
+#include "../controllers/controller.h"
 #include "cache.h"
 #include "utils/crypto.h"
 #include <jaszyk/json.hpp>

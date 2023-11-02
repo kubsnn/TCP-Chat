@@ -15,7 +15,7 @@ public:
 
     Crypto();
     Crypto(const std::string& public_key);
-    Crypto(const Crypto& other) = delete;
+    Crypto(const Crypto& other);
     Crypto(Crypto&& other) noexcept;
     ~Crypto();
 
@@ -32,6 +32,9 @@ public:
     Crypto& operator=(const Crypto& other);
     Crypto& operator=(Crypto&& other) noexcept;
 private:
+    RSA* copyPublicKey(const RSA* key) const;
+    RSA* copyPrivateKey(const RSA* key) const;
+
     RSA* private_key_ = nullptr;
     RSA* public_key_ = nullptr;
 

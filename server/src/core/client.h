@@ -20,6 +20,8 @@ public:
     const std::string& username() const;
     const Crypto& crypto() const;
     
+    bool logged() const;
+
     void setPublicKey(const std::string& key);
     void setUsername(std::string username);
 

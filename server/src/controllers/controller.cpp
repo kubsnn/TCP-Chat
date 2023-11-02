@@ -1,14 +1,14 @@
 #include "controller.h"
-#include "database/user_db_handle.h"
+#include "../core/database/user_db_handle.h"
 
 Controller::Controller(Client& client, Cache& cache)
     : client_(client), cache_(cache)
 { 
     addMethod("register", [this](const json& data) {
-        return this->registerUser(data);
+        return this->signup(data);
     });
     addMethod("login", [this](const json& data) {
-        return this->loginUser(data);
+        return this->signin(data);
     });
     addMethod("sendto", [this](const json& data) {
         return this->sendTo(data);
@@ -18,7 +18,8 @@ Controller::Controller(Client& client, Cache& cache)
     });
 }
 
-json Controller::registerUser(const json& data) const {
+// register user method
+json Controller::signup(const json& data) const {
     json response = json::dictionary();
     const auto& creds = data["creds"].get<json::dictionary>();
     const auto& username = creds["username"].get<std::string>();
@@ -36,7 +37,8 @@ json Controller::registerUser(const json& data) const {
     return ok();
 }
 
-json Controller::loginUser(const json& data) const {
+// login user method
+json Controller::signin(const json& data) const {
     json response = json::dictionary();
     const auto& creds = data["creds"].get<json::dictionary>();
     const auto& username = creds["username"].get<std::string>();
@@ -56,6 +58,10 @@ json Controller::loginUser(const json& data) const {
         return fail("you are already logged in");
     }
 
+    if (client_.logged()) {
+        return fail("you are already logged in; logout first");
+    }
+
     client_.setUsername(username);
 
     cache_.addUserOnline(client_);
@@ -63,18 +69,38 @@ json Controller::loginUser(const json& data) const {
     return ok();
 }
 
+// logout user method
+json Controller::signout(const json& data) const {
+    if (!client_.logged()) {
+        return fail("you are not logged in");
+    }
+
+    cache_.removeUserOnline(client_.username());
+    client_.setUsername("");
+
+    return ok();
+}
+
 json Controller::sendTo(const json& data) const {
+    if (!client_.logged()) {
+        return fail("you are not logged in");
+    }
+
     const auto& receiver_name = data["who"].get<std::string>();
     
     if (!cache_.isUserOnline(receiver_name)) {
         return fail("user is offline");
     }
 
-    auto user = cache_.getUser(receiver_name);
+    json message = json::dictionary();
+    message["from"] = client_.username();
+    message["to"] = receiver_name;
+    message["message"] = data["message"].get<std::string>();
+    message["type"] = "message";
 
-    //bool success = user.socket().write(data["message"].get<std::string>());
-    
-    
+    auto user = cache_.getUser(receiver_name);
+    user.writeEncrypted(message.to_string());
+
     return ok();
 }
 

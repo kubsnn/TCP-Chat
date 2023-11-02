@@ -6,5 +6,9 @@
         "ostream": "cpp",
         "thread": "cpp"
     },
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "editor.fontLigatures": false,
+    "editor.fontFamily": "Cascadia Mono PL, Consolas, 'Courier New', monospace",
+    "editor.fontWeight": "600",
+    "editor.mouseWheelZoom": true
 }
