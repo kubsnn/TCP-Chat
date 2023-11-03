@@ -6,7 +6,7 @@
 int main(int argc, char* argv[]) {
     configure_databases();
 
-    if (argc <= 1) {
+    if (argc != 3) {
         Server("0.0.0.0", 42069).run();
     } else {
         const char* ip = argv[1];
