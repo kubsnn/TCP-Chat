@@ -1,6 +1,7 @@
 #include "server.h"
 
 #include "core/client_handler.h"
+#include "core/utils/globals.h"
 #include "logger.h"
 #include <cstring>
 #include <iostream>
@@ -23,6 +24,8 @@ Server::Server(const char* ip, int port)
         logger.info() << "Sockets closed. Exiting..." << std::endl;
         exit(signum);
     });
+
+    logger.info() << "Starting in " << executable_dir << '.' << std::endl;
 }
 
 Server::~Server() { 
@@ -85,6 +88,7 @@ void Server::onInterrupt(int signum) {
     for (auto& client : clients) {
         close(client.socket().fd());
     }
+
     close(sockfd_);
     sockfd_ = -1;
 }

@@ -3,13 +3,14 @@
 #define __USER_DATABASE_H__
 
 #include "user.h"
+#include "../utils/globals.h"
 #include <sqlite/sqlite3.h>
 
 void configure_databases();
 
 class UserDbHandle {
 public:
-    inline static std::string database_name = "users.db";
+    inline static const auto database_path = executable_dir / "users.db";
 
     UserDbHandle();
     UserDbHandle(const UserDbHandle&) = delete;

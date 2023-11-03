@@ -47,59 +47,86 @@ namespace {
         return size;
     }
 
-    inline json read_data(int fd, const int message_size) {
-        char* data = new char[message_size];
-        char* buff = data;
-        int bytes_left = message_size;
-        while (bytes_left) {
-            int count = ::read(fd, buff, bytes_left);
+    inline std::string read_data(int fd, int bytes_to_read) {
+        std::string data;
+        data.resize(bytes_to_read);
+
+        char* buff = data.data();
+        while (bytes_to_read) {
+            int count = ::read(fd, buff, bytes_to_read);
             if (count <= 0) {
                 throw std::runtime_error("connection has been lost");
             }
             buff += count;
-            bytes_left -= count;
+            bytes_to_read -= count;
         }
-        auto message = json::parse({data, (unsigned int)message_size});
-        delete[] data;
-        return message;
+        return data;
     }
 
-    inline json data_to_long() {
-        json response = json::dictionary();
-        response["error"] = true;
-        response["result"] = "fail";
-        response["message"] = "request too big";
-        return response;
+    inline void read_data(int fd, int bytes_to_read, char* buff) {
+        while (bytes_to_read) {
+            int count = ::read(fd, buff, bytes_to_read);
+            if (count <= 0) {
+                throw std::runtime_error("connection has been lost");
+            }
+            buff += count;
+            bytes_to_read -= count;
+        }
     }
 
     inline void skip_bytes(int fd, int bytes_left) {
         char buff[512];
         while (bytes_left > 0) {
             int count = ::read(fd, buff, std::min((int)sizeof(buff), bytes_left));
+            if (count <= 0) {
+                throw std::runtime_error("connection has been lost");
+            }
             bytes_left -= count;
         }
     }
 }
 
-json Socket::read() const {
+std::string Socket::read() const {
     int size = read_header(sockfd_);
     if (size > 65536) {
         skip_bytes(sockfd_, size);
-        return data_to_long();
+        return "{\"error\":true,\"result\":\"fail\",\"message\":\"request too big\"}";
     }
     return read_data(sockfd_, size);
 }
 
+std::string Socket::read(const Crypto& crypto) const {
+    int size = read_header(sockfd_);
+    if (size > 65536) {
+        skip_bytes(sockfd_, size);
+        return "{\"error\":true,\"result\":\"fail\",\"message\":\"request too big\"}";
+    }
+    char buff[Crypto::rsa_size];
+    std::string data;
+    data.resize(size);
+    char* ptr = data.data();
+    int bytes_left = size;
+    while (bytes_left > 0) {
+        std::cout << "reading " << Crypto::rsa_size << " bytes" << std::endl;
+        read_data(sockfd_, Crypto::rsa_size, buff);
+        crypto.decrypt(buff, Crypto::rsa_size, ptr);
+        ptr += Crypto::max_data_size;
+        bytes_left -= Crypto::rsa_size;
+    }
+    return data;
+}
+
 namespace {
-    inline bool write_header(int fd, const std::string& message) {
-        int size = message.size() + 1;
-        if (::write(fd, &size, sizeof(int)) <= 0) return false;
+    inline bool write_header(int fd, int message_size) {
+        if (::write(fd, &message_size, sizeof(int)) <= 0) return false;
         return true;
     }
 
-    inline bool write_data(int fd, const std::string& message) {
-        const char* data = message.c_str();
-        int size = message.size() + 1; 
+    inline bool write_header(int fd, const std::string& message) {
+        return write_header(fd, message.size() + 1);
+    }
+
+    inline bool write_data(int fd, const char* data, int size) {
         while (size > 0) {
             int count = ::write(fd, data, size);
             if (count <= 0) return false;
@@ -108,14 +135,44 @@ namespace {
         }
         return true;
     }
+
+    inline bool write_data(int fd, const std::string& message) {
+        return write_data(fd, message.c_str(), message.size() + 1);
+    }
 }
 
-bool Socket::write(const json& data) const {
-    auto str = data.to_string();
-
+bool Socket::write(const std::string& data) const {
     std::lock_guard<std::mutex> lock(mutexes[sockfd_]);
-    write_header(sockfd_, str);
-    return write_data(sockfd_, str);
+    write_header(sockfd_, data);
+    return write_data(sockfd_, data);
+}
+
+bool Socket::write(const std::string &data, const Crypto& crypto) const {
+    std::lock_guard<std::mutex> lock(mutexes[sockfd_]);
+
+    int size = data.size() + 1;
+    int blocks = size / Crypto::rsa_size + (size % Crypto::rsa_size ? 1 : 0);
+    
+    // max size of encrypted data
+    int total_size = blocks * Crypto::rsa_size;
+
+    write_header(sockfd_, total_size);
+
+    const char* ptr = data.c_str();
+
+    char buff[Crypto::rsa_size];
+    while (size > 0) {
+        std::fill(std::begin(buff), std::end(buff), '\0');
+        int count = std::min(size, Crypto::max_data_size);
+        crypto.encrypt(ptr, count, buff); 
+
+        if (!write_data(sockfd_, buff, Crypto::rsa_size)) return false;
+
+        ptr += Crypto::max_data_size;
+        size -= count;
+    }
+
+    return true;
 }
 
 void Socket::close() {

@@ -11,6 +11,8 @@
 // Thread-safe Cachce class
 class Cache {
 public:
+    Cache() = default;
+
     bool isUserOnline(const std::string& username);
 
     void addUserOnline(Client client);

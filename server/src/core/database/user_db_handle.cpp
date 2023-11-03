@@ -4,7 +4,7 @@
 UserDbHandle::UserDbHandle()
     : db_(nullptr) 
 {
-    if (sqlite3_open(database_name.c_str(), &db_) != SQLITE_OK) {
+    if (sqlite3_open(database_path.c_str(), &db_) != SQLITE_OK) {
         throw std::runtime_error("cannot open database");
     }
 

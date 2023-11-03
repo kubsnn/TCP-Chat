@@ -14,6 +14,11 @@
 #include <jaszyk/json.hpp>
 #include "core/socket.h"
 #include "logger.h"
+#include <csignal>
+#include "core/utils/globals.h"
+#include "core/utils/crypto.h"
+#include <openssl/ssl.h>
+#include <openssl/crypto.h>
 
 using jaszyk::json;
 
@@ -24,7 +29,7 @@ public:
         addr_.sin_port = htons(port);
         addr_.sin_family = AF_INET;
         addr_.sin_addr.s_addr = inet_addr(ip);
-
+        m_crypto_.create();
         // on ctrl-v
         register_signal(SIGINT, [this](int signum) {
             socket_.close();
@@ -35,10 +40,24 @@ public:
 
     void run() {
         buildClient();
-
-        std::thread([&]() { // receiver
+        {
+            auto f = socket_.read();
+            json init_data = json::parse(f);
+            server_crypto_ = Crypto(init_data["public_key"].get<std::string>());
+        }
+        {
+            json init_data = json::dictionary();
+            init_data["action"] = "init";
+            init_data["public_key"] = m_crypto_.public_key();
+            std::cout << "sending public key to server..." << std::endl;
+            socket_.write(init_data.to_string(), server_crypto_);
+            std::cout << "public key sent" << std::endl;
+        }
+        std::cout << "client public key:\n" << m_crypto_.public_key() << std::endl;
+        std::thread([&, this]() { // receiver
+            
             while (socket_.fd() != -1) {
-                json response = socket_.read();
+                json response = json::parse(this->socket_.read(this->m_crypto_));
                 std::cout << "received: " << response << std::endl;
             }
             std::cout << "receiver closed" << std::endl;
@@ -63,7 +82,7 @@ public:
                 std::getline(std::cin, line);
                 data["message"] = std::move(line);
 
-                socket_.write(data);
+                socket_.write(data.to_string(), server_crypto_);
             }
             if (msg == "register") {
                 data["action"] = "register";
@@ -73,7 +92,7 @@ public:
                 std::cin >> msg;
                 data["creds"]["password"] = msg;
 
-                socket_.write(data);
+                socket_.write(data.to_string(), server_crypto_);
                 msg = "";
             }
             if (msg == "login") {
@@ -84,12 +103,12 @@ public:
                 std::cin >> msg;
                 data["creds"]["password"] = msg;
 
-                socket_.write(data);
+                socket_.write(data.to_string(), server_crypto_);
                 msg = "";
             }
             if (msg == "online") {
                 data["action"] = "usersOnline";
-                socket_.write(data);
+                socket_.write(data.to_string(), server_crypto_);
                 msg = "";
             }
         }
@@ -113,9 +132,14 @@ private:
 
     sockaddr_in addr_;
     Socket socket_;
+    Crypto m_crypto_;
+    Crypto server_crypto_;
 };
 
+
 int main(int argc, char* argv[]) {
+    OpenSSL_add_all_algorithms();
+
     if (argc != 3) {
         Client("127.0.0.1", 42069).run();
     } else {
