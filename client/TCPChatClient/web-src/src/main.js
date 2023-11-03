@@ -1,5 +1,6 @@
 import "./style.css";
 import App from "./App.vue";
+import store from "./store.js";
 import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 
@@ -61,4 +62,4 @@ const router = createRouter({
 	routes,
 });
 
-createApp(App).component("font-awesome-icon", FontAwesomeIcon).use(router).mount("#app");
+createApp(App).component("font-awesome-icon", FontAwesomeIcon).use(store).use(router).mount("#app");

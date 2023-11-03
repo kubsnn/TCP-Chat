@@ -8,6 +8,8 @@ import threading
 SERVER_ADDR = config('HOST_ADDR')
 PORT_NO = int(config('PORT_NO'))
 
+client_socket = None
+
 import sys
 
 @eel.expose
@@ -16,32 +18,29 @@ def close_python(*args):
 
 @eel.expose
 def send_data(data):
+    global client_socket
     try:
         print("Sending data: " + data)
         dataLength = int(len(data))
         print("Sending data of length: " + str(dataLength))
-        tcp.send_data(SERVER_ADDR, PORT_NO, dataLength)
-        tcp.send_data(SERVER_ADDR,PORT_NO, data)
+        tcp.send_data(dataLength, client_socket)
+        tcp.send_data(data, client_socket)
     except Exception as e:
         print(e)
 
+@eel.expose
+def connect_to_server():
+    global client_socket
+    client_socket = tcp.create_socket(tcp.resolve_to_ip(SERVER_ADDR), PORT_NO)
+    if client_socket is None:
+        print("Unable to connect to server!")
+        eel.show_toast("danger", "Unable to connect to server!", 2000)
+        return False
 
-
-def serve():
-    # Start a TCP server
-    server_socket = tcp.start_tcp_server("0.0.0.0", 42069)
-
-    while True:
-        # Accept incoming client connections
-        client_socket, address = server_socket.accept()
-        print(f"Accepted connection from {address[0]}:{address[1]}")
-
-        # Handle the client in a separate thread
-        client_thread = threading.Thread(
-            target=tcp.handle_client,
-            args=(client_socket,)
-        )
-        client_thread.start()
+    receive_thread = threading.Thread(target=tcp.receive_data, args=(client_socket,))
+    receive_thread.start()
+    eel.show_toast("success", "Connected to server!", 2000)
+    return True
 
 
 
@@ -52,19 +51,25 @@ def initProjectPath():
     os.chdir(project_directory)
 
 def startApp():
+    global client_socket
     initProjectPath()
 
-
-    # Start the TCP server on different thread
-    #server_thread = threading.Thread(target=serve)
-    #server_thread.start()
 
     # Start the Eel web app
     try:
         #Start the application and pass all initial params below
+        print("Initializing web app...")
         eel.init("web")
+        print("Starting index.html...")
         eel.start("index.html")
+
     except (SystemExit, MemoryError, KeyboardInterrupt):
+
+        print("Exiting...")
+
+        if client_socket is not None:
+            client_socket.close()
+
 
         #Handle errors and the potential hanging python.exe process
         #on windows:
@@ -76,7 +81,7 @@ def startApp():
 
 
 
-
 if __name__ == "__main__":
     print("Starting chat client app...")
     startApp()
+
