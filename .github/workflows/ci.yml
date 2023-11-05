@@ -1,0 +1,26 @@
+name: Build CI
+
+on:
+  push:
+    branches:
+      - feature/server
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc
+        sudo apt-get install -y g++-13
+        sudo apt-get install -y libssl-dev
+
+    - name: Build the C++ project
+      working-directory: server
+      run: |
+        make
