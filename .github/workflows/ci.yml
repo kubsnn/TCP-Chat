@@ -1,4 +1,4 @@
-name: Build CI
+name: Server CI
 
 on:
   push:
@@ -16,11 +16,9 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y gcc
-        sudo apt-get install -y g++-13
-        sudo apt-get install -y libssl-dev
+        sudo apt-get install -y gcc g++ libssl-dev
 
-    - name: Build the C++ project
-      working-directory: server
+    - name: Build Server
       run: |
+        cd server
         make
