@@ -6,6 +6,7 @@
 #include <openssl/rsa.h>
 #include <openssl/bn.h>
 #include <openssl/err.h>
+#include <openssl/bio.h>
 
 Crypto::Crypto() 
     : private_key_(nullptr), public_key_(nullptr)

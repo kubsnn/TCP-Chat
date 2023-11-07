@@ -4,12 +4,12 @@ SRC_DIR = src
 LIB_DIR = src/lib
 BUILD_DIR = build
 BIN_DIR = bin
-
+#OPENSSL_FILES = /usr/lib/x86_64-linux-gnu/libssl.so.3 /usr/lib/x86_64-linux-gnu/libcrypto.so.3
 # Compiler and flags
 CC = gcc
 CXX = g++
-CFLAGS = -O3
-CXXFLAGS = -Wall -Wunused-variable -lssl -lcrypto -fdiagnostics-color=always -std=c++2a -lpthread -I'$(SRC_DIR)/include' -I'$(SRC_DIR)' -g
+CFLAGS = -O1
+CXXFLAGS = -Wall -Wunused-variable -fdiagnostics-color=always -std=c++2a -lpthread -I'$(SRC_DIR)/include' -I'$(SRC_DIR)' -L'/usr/lib/x86_64-linux-gnu' -lssl -lcrypto -g
 
 # Source files
 CPP_SOURCES = $(wildcard $(SRC_DIR)/*.cpp) \

@@ -16,10 +16,15 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y gcc g++ libssl-dev
+        sudo apt-get install gcc
+        sudo apt-get install g++
+        sudo apt-get install libssl-dev
+        sudo apt-get install openssl        
+
         openssl version
-        find /usr/lib -name libssl.so.3
+        pkg-config --libs --cflags openssl
         
+
 
     - name: Build Server
       run: |
