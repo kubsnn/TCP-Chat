@@ -29,4 +29,5 @@ jobs:
     - name: Build Server
       run: |
         cd server
+        cmake CMakelists.txt
         make
