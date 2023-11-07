@@ -36,4 +36,20 @@ server/bin/server
 server/server
 server/log.txt
 server/src/server
-.gitignore
+
+# Ignore CMake build files
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Ignore compiled files
+*.o
+*.so
+*.a
+*.out
+
+# Ignore the binary directory
+bin/
