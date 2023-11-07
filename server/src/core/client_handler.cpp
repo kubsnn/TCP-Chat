@@ -24,7 +24,7 @@ void ClientHandler::run() {
         return;
     }
 
-    logger.info() << client_.ip() << " has public key:\n" << client_.crypto().public_key() << std::endl;
+    // logger.info() << client_.ip() << " has public key:\n" << client_.crypto().public_key() << std::endl;
 
     while (true) {
         try {
@@ -41,7 +41,9 @@ void ClientHandler::run() {
             if (result["result"].get<std::string>() == "fatal") {
                 break;
             }
+            
             result["response"] = true;
+            result["action"] = std::move(request["action"]);
             sendResponse(result);
 
         } catch (const std::exception& ex) { // socket closed

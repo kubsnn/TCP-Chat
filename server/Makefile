@@ -9,7 +9,7 @@ BIN_DIR = bin
 CC = gcc
 CXX = g++
 CFLAGS = -O3
-CXXFLAGS = -Wall -Wunused-variable -fdiagnostics-color=always -std=c++2a -lpthread -I'$(SRC_DIR)/include' -I'$(SRC_DIR)' -g
+CXXFLAGS = -Wall -Wunused-variable -lssl -lcrypto -fdiagnostics-color=always -std=c++2a -lpthread -I'$(SRC_DIR)/include' -I'$(SRC_DIR)' -g
 
 # Source files
 CPP_SOURCES = $(wildcard $(SRC_DIR)/*.cpp) \
@@ -21,7 +21,7 @@ CPP_SOURCES = $(wildcard $(SRC_DIR)/*.cpp) \
 C_SOURCES = $(wildcard $(SRC_DIR)/include/sqlite/*.c)
 
 # lib files
-LIBS = $(wildcard $(LIB_DIR)/*.so.3)
+#LIBS = $(wildcard $(LIB_DIR)/*.so.3)
 
 # Object files
 CPP_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(CPP_SOURCES))
@@ -52,7 +52,7 @@ $(BUILD_DIR)/sqlite/%.o: $(SRC_DIR)/include/sqlite/%.c | $(BUILD_DIR)/sqlite
 
 # Build
 build: $(C_OBJECTS) $(CPP_OBJECTS)
-	$(CXX) $(CXXFLAGS) $(CPP_OBJECTS) $(C_OBJECTS) $(LIBS) -o $(BIN_DIR)/$(TARGET)
+	$(CXX) $(CXXFLAGS) $(CPP_OBJECTS) $(C_OBJECTS) -o $(BIN_DIR)/$(TARGET)
 
 # Clean up
 clean:
