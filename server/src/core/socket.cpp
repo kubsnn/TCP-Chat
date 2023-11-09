@@ -8,17 +8,18 @@
 #include <iostream>
 #include <exception>
 
-static std::function<void(int)> handler_;
+namespace {
+    std::function<void(int)> handler_;
 
-static void signal_wrapper(int signum) {
-    if (handler_) {
-        handler_(signum);
+    void signal_wrapper_(int signum) {
+        if (handler_) {
+            handler_(signum);
+        }
     }
 }
-
 void register_signal(int signum, std::function<void(int)> handler) {
     handler_ = std::move(handler);
-    signal(signum, signal_wrapper);
+    signal(signum, signal_wrapper_);
 }
 
 // Socket
@@ -107,7 +108,6 @@ std::string Socket::read(const Crypto& crypto) const {
     char* ptr = data.data();
     int bytes_left = size;
     while (bytes_left > 0) {
-        std::cout << "reading " << Crypto::rsa_size << " bytes" << std::endl;
         read_data(sockfd_, Crypto::rsa_size, buff);
         crypto.decrypt(buff, Crypto::rsa_size, ptr);
         ptr += Crypto::max_data_size;

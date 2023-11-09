@@ -12,15 +12,20 @@ class IController {
     template <typename T1, typename T2>
     using map = jaszyk::flatmap<T1, T2>;
 public:
+    friend class ClientHandler;
+    
     bool hasMethod(const std::string& method) const;
     json invoke(const std::string& method, const json& data) const;
     
 protected:
     void addMethod(std::string name, std::function<json(const json&)> method);
 
+    std::string hash(const std::string& data) const;
+
     json ok(json&& result) const;
     json ok() const;
     json fail(std::string message) const;
+    json fatal() const;
 
 private:
     map<std::string, std::function<json(const json&)>> methods_;

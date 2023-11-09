@@ -1,5 +1,6 @@
 #include "controller.h"
-#include "../core/database/user_db_handle.h"
+#include <core/database/user_db_handle.h>
+#include <logger.h>
 
 Controller::Controller(Client& client, Cache& cache)
     : client_(client), cache_(cache)
@@ -9,6 +10,9 @@ Controller::Controller(Client& client, Cache& cache)
     });
     addMethod("login", [this](const json& data) {
         return this->signin(data);
+    });
+    addMethod("logout", [this](const json& data) {
+        return this->signout(data);
     });
     addMethod("sendto", [this](const json& data) {
         return this->sendTo(data);
@@ -23,15 +27,15 @@ json Controller::signup(const json& data) const {
     json response = json::dictionary();
     const auto& creds = data["creds"].get<json::dictionary>();
     const auto& username = creds["username"].get<std::string>();
-    const auto& password_hash = creds["password"].get<std::string>();
+    const auto& password = creds["password"].get<std::string>();
 
     UserDbHandle db;
     if (db.exists(username)) {
         return fail("username is taken");
     }
 
-    if (!db.add({username, password_hash})) {
-        return fail("internal server error");
+    if (!db.add({ username, hash(password) })) {
+        return fatal();
     }
 
     return ok();
@@ -42,7 +46,7 @@ json Controller::signin(const json& data) const {
     json response = json::dictionary();
     const auto& creds = data["creds"].get<json::dictionary>();
     const auto& username = creds["username"].get<std::string>();
-    const auto& password_hash = creds["password"].get<std::string>();
+    const auto& password = creds["password"].get<std::string>();
 
     UserDbHandle db;
     if (!db.exists(username)) {
@@ -50,7 +54,7 @@ json Controller::signin(const json& data) const {
     }
 
     auto user = db.getByName(username);
-    if (user.passwordHash() != password_hash) {
+    if (user.passwordHash() != hash(password)) {
         return fail("invalid password");
     }
 

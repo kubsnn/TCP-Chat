@@ -8,7 +8,7 @@
 #include <mutex>
 #include <shared_mutex>
 
-// Thread-safe Cachce class
+// Thread-safe Cache class
 class Cache {
 public:
     Cache() = default;

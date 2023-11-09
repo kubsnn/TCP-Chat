@@ -7,6 +7,7 @@
 #include <openssl/bn.h>
 #include <openssl/err.h>
 #include <openssl/bio.h>
+#include <random>
 
 Crypto::Crypto() 
     : private_key_(nullptr), public_key_(nullptr)
@@ -212,6 +213,27 @@ bool Crypto::verifyKey(const std::string& key) {
     }
     RSA_free(rsa);
     return true;
+}
+
+std::string Crypto::sha256(const std::string& data) {
+    return sha256(data.c_str(), data.size());
+}
+
+std::string Crypto::sha256(const char* data, int len) {
+    std::string hash(SHA256_DIGEST_LENGTH, 0);
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, data, len);
+    SHA256_Final(reinterpret_cast<unsigned char*>(hash.data()), &sha256);
+    
+    return hash;
+}
+
+int Crypto::random(int min, int max) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(min, max);
+    return dis(gen);
 }
 
 #pragma GCC diagnostic pop
