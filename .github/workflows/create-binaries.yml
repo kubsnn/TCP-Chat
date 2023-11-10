@@ -1,1 +1,85 @@
+name: Release Client Binaries
+on:
+  push:
+    branches:
+      - main
 
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2019, macos-12, macos-13-large]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Set up Taskfile
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            curl -L -o task.exe https://github.com/go-task/task/releases/download/v3.12.0/task_windows_amd64.exe
+          elif [ "$RUNNER_OS" == "Linux" ]; then
+            if [ "$RUNNER_ARCH" == "x64" ]; then
+              curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_linux_amd64
+            elif [ "$RUNNER_ARCH" == "arm64" ]; then
+              curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_linux_arm64
+            fi
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            if [ "$RUNNER_ARCH" == "x64" ]; then
+              curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_darwin_amd64
+            elif [ "$RUNNER_ARCH" == "arm64" ]; then
+              curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_darwin_arm64
+            fi
+          fi
+          chmod +x task
+          mv task /usr/local/bin/
+
+      - name: Go to Client Directory
+        run: cd client
+
+      - name: Install Dependencies
+        run: task install
+
+      - name: Build App
+        run: task build
+
+      - name: Create Binaries
+        run: task binaries
+
+      - name: Upload Binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: ./dist
+
+  release:
+    needs: build
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: binaries
+          path: ./dist
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./dist/*
+          name: ${{ github.ref }}
