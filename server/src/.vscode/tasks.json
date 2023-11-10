@@ -1,0 +1,61 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C++: Build Server",
+            "command": "/usr/bin/g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-std=c++2a",
+                "-lpthread",
+                "-I'include'",
+                "-g",
+                "main.cpp",
+                "server.cpp",
+                "core/client_handler.cpp",
+                "core/controller.cpp",
+                "core/cache.cpp",
+                "core/client.cpp",
+                "core/socket.cpp",
+                "core/database/user_db_handle.cpp",
+                "core/database/user.cpp",
+                "lib/sqlite3.o",
+                "-o",
+                "server"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Task created by kubs."
+        },
+        {
+            "type": "cppbuild",
+            "label": "C++: Build Client Helper",
+            "command": "/usr/bin/g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-std=c++2a",
+                "-lpthread",
+                "-I'include'",
+                "-g",
+                "client_.cxx",
+                "wrappers.cpp",
+                "-o",
+                "client"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Task created by kubs."
+        }
+    ]
+}

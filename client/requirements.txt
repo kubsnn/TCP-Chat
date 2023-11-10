@@ -1,0 +1,3 @@
+pytest==7.4.3
+pyinstaller==6.1.0
+-r ./src/requirements.txt

@@ -1,69 +1,59 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <iostream>
-#include <cstring>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <algorithm>
-#include <thread>
-#include "json.hpp"
-#include "wrappers.h"
+#include "client.h"
+#include <mutex>
 
-using jaszyk::json;
+Client::Client(int sockfd, sockaddr_in addr)
+    : socket_(sockfd)
+{
+    ip_ = new char[kIpSize];
+    inet_ntop(AF_INET, &addr.sin_addr, ip_, kIpSize);
+}
 
-class Client {
-public:
-    Client(const char* ip, int port)
-        : socket_(-1) {
-        addr_.sin_port = htons(port);
-        addr_.sin_family = AF_INET;
-        addr_.sin_addr.s_addr = inet_addr(ip);
-    }
+Client::Client(Client&& other) noexcept
+    : socket_(std::move(other.socket_))
+    , username_(std::move(other.username_))
+{
+    ip_ = other.ip_;
+    other.ip_ = nullptr;
+}
 
-    void run() {
-        buildClient();
+Client::Client(const Client& other)
+    : socket_(other.socket_)
+    , username_(other.username_)
+{
+    ip_ = new char[kIpSize];
+    std::copy(&other.ip_[0], &other.ip_[kIpSize], &ip_[0]);
+}
 
-        while (true) {
-            std::string msg;
-            std::cin >> msg;
-            if (msg == "exit") {
-                break;
-            }
-            json data = json::dictionary();
-            data["data"] = std::move(msg);
-            data["type"] = 3;
+const Socket& Client::socket() const {
+    return socket_;
+}
 
-            socket_.write(data);
-            
-            json response = socket_.read();
-            std::cout << "echo: " << response.to_pretty_string() << std::endl;
-        }
+const char* Client::ip() const {
+    return ip_;
+}
 
-        socket_.close();
-    }
-private:
-    void buildClient() {
-        int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-        if (sockfd < 0) {
-            std::cerr << "socket error" << std::endl;
-            return;
-        }
-        if (connect(sockfd, (sockaddr*)&addr_, sizeof(addr_)) < 0) {
-            std::cerr << "connect error" << std::endl;
-            return;
-        }
-        socket_ = Socket(sockfd);
-    }
+const std::string& Client::username() const {
+    return username_;
+}
 
-    sockaddr_in addr_;
-    Socket socket_;
-};
+void Client::disconnect() {
+    socket_.close();
+}
 
-int main(int, char*[]) {
-    Client("127.0.0.1", 1100).run();
+Client& Client::operator=(Client&& other) noexcept {
+    socket_ = std::move(other.socket_);
+    ip_ = other.ip_;
+    username_ = std::move(other.username_);
+    other.ip_ = nullptr;
+
+    return *this;
+}
+
+Client& Client::operator=(const Client& other) {
+    socket_ = other.socket_;
+    ip_ = new char[kIpSize];
+    username_ = other.username_;
+    std::copy(&other.ip_[0], &other.ip_[kIpSize], &ip_[0]);
+
+    return *this;
 }
