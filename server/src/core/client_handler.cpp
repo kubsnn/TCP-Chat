@@ -24,8 +24,6 @@ void ClientHandler::run() {
         return;
     }
 
-    // logger.info() << client_.ip() << " has public key:\n" << client_.crypto().public_key() << std::endl;
-
     while (true) {
         try {
             json request = receiveRequest();
@@ -65,7 +63,15 @@ bool ClientHandler::isValidRequest(const json& data) {
 }
 
 json ClientHandler::execute(const json& query) {
-    return Controller(client_, cache_).invoke(query["action"].get<std::string>(), query);
+    try {
+        return Controller(client_, cache_).invoke(query["action"].get<std::string>(), query);
+    } catch (const std::exception& ex) {
+        logger.warning() << "Exception occured: " << ex.what() << std::endl;
+        return IController().fatal();
+    } catch (...) {
+        logger.error() << "Unknown exception occured." << std::endl;
+        return IController().fatal();
+    }
 }
 
 bool ClientHandler::sendResponse(const json& response) {
@@ -73,7 +79,6 @@ bool ClientHandler::sendResponse(const json& response) {
 }
 
 json ClientHandler::receiveRequest() {
-    std::cout << "trying to read" << std::endl;
     return json::parse(client_.socket().read(crypto_));
 }
 
@@ -81,6 +86,7 @@ bool ClientHandler::initializeClientPublicKey() {
     json message = json::dictionary();
     message["public_key"] = crypto_.public_key();
     message["message"] = "Waiting for your public key...";
+    message["action"] = "init";
 
     const std::string msg = message.to_string();
     message = false; // free json
@@ -92,7 +98,6 @@ bool ClientHandler::initializeClientPublicKey() {
             }
 
             auto response = json::parse((client_.socket().read(crypto_)));
-            std::cout << response << std::endl;
 
             if (!response.is<json::dictionary>()) continue;
             
