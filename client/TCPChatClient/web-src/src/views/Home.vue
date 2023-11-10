@@ -18,7 +18,6 @@ export default {
             let connectionSocketStatus = await eel.connect_to_server()()
             if (connectionSocketStatus === true) {
                 this.setConnected()
-                eel.showToast('success', 'Connected to server', 2000);
             }
             else {
                 this.setDisconnected()

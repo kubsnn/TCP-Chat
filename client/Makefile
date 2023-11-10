@@ -19,6 +19,7 @@ install:
 
 # Target for building the app using npm
 build:
+	rm -rf TCPChatClient/web/assets
 	cd TCPChatClient/web-src && npm run build
 
 # Target for starting the Python script

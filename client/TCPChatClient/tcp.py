@@ -1,7 +1,9 @@
+import re
 import socket
 import ipaddress
 import struct
 import eel
+import time
 
 messageStorage = []
 
@@ -29,19 +31,33 @@ def create_socket(server_ip, server_port):
 
 # Function to listen for messages from the server
 def receive_data(client_socket):
+    print("Waiting for message from the server...")
+    try:
+        #get message size from 4 bytes
+        message_size = client_socket.recv(4)
+        message = client_socket.recv(struct.unpack('I', message_size)[0]).decode('utf-8')
+
+        if not message:
+            return None
+        print("Received:", message)
+        eel.show_toast("success", "Received: " + message, 5000) # type: ignore
+        return message
+
+    except ConnectionResetError:
+        return None
+
+def listen_data(client_socket):
     print("Listening for messages from the server...")
     while True:
         try:
-            message = client_socket.recv(1024).decode('utf-8')
-            if not message:
+            message = receive_data(client_socket)
+            if message is None:
                 break
-            print("Received:", message)
-            eel.show_toast("success", "Received: " + message, 5000)
-            #add To messageStorage
             messageStorage.append(message)
 
         except ConnectionResetError:
             break
+
 
 
 def send_data(data, client_socket):
@@ -57,6 +73,7 @@ def send_data(data, client_socket):
         data = data.encode('utf-8')
         print("Message Send Response: ", client_socket.send(data))
     except socket.error as e:
+        eel.send_toast("danger", "Unable to send data to server!", 2000) # type: ignore
         print(str(e))
 
 

@@ -9,6 +9,7 @@
 
 <script>
 import { FwbToast } from 'flowbite-vue';
+import { eventBus } from '@/services/EventBus';
 
 export default {
     data() {
@@ -89,6 +90,9 @@ export default {
     },
     mounted() {
         eel.expose(this.showToast, "show_toast");
+        eventBus.on('show-toast', (type, message, time) => {
+            this.showToast(type, message, time);
+        });
     },
     components: {
         FwbToast

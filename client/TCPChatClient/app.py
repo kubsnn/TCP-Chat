@@ -4,7 +4,6 @@ import tcp
 from decouple import config
 import threading
 
-
 SERVER_ADDR = config('HOST_ADDR')
 PORT_NO = int(config('PORT_NO'))
 
@@ -34,13 +33,24 @@ def connect_to_server():
     client_socket = tcp.create_socket(tcp.resolve_to_ip(SERVER_ADDR), PORT_NO)
     if client_socket is None:
         print("Unable to connect to server!")
-        eel.show_toast("danger", "Unable to connect to server!", 2000)
+        eel.show_toast("danger", "Unable to connect to server!", 2000) # type: ignore
         return False
 
-    receive_thread = threading.Thread(target=tcp.receive_data, args=(client_socket,))
-    receive_thread.start()
-    eel.show_toast("success", "Connected to server!", 2000)
+    eel.show_toast("success", "Connected to server!", 2000) # type: ignore
     return True
+
+@eel.expose
+def listen_to_server():
+    receive_thread = threading.Thread(target=tcp.listen_data, args=(client_socket,))
+    receive_thread.start()
+
+@eel.expose
+def receive_from_server():
+    data = tcp.receive_data(client_socket)
+    if data == None:
+        eel.show_toast("danger", "No response from server!", 2000) # type: ignore
+        return False
+    return data
 
 
 
