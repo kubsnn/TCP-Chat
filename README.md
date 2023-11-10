@@ -1,5 +1,5 @@
 # Server Documentation
-
+![Build CI](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci.yml/badge.svg) </br>
 This documentation provides information about the available requests for the TCP Chat server. Each request must be in JSON format.
 
 ## Data Format Requirements
@@ -11,7 +11,8 @@ On connection start server sends 2048 bit RSA public key in PEM format in JSON w
 ```json
 {
   "public_key" : "-----BEGIN RSA PUBLIC KEY-----\n...",
-  "message" : "Waiting for your public key..."
+  "message" : "Waiting for your public key...",
+  "action" : "init"
 }
 ```
 
@@ -56,11 +57,13 @@ The server will respond with a JSON object in the following format:
 ```json
 {
   "response" : true,
+  "action" : "register",
   "result" : "ok or fail",
   "message" : "failure reason" (optional)
 }
 ```
 * "response" will be true to indicate a response.
+* "action" will be set to "register" to indicate a registration response.
 * "result" will be set to "ok" if the registration is successful or "fail" in case of an error.
 * "message" (optional) will provide a failure reason in case of registration failure.
 
@@ -87,11 +90,13 @@ The server will respond with a JSON object in the same format as the register re
 ```json
 {
   "response" : true,
+  "action" : "login",
   "result" : "ok or fail",
   "message" : "failure reason" (optional)
 }
 ```
 * "response" will be true to indicate a response.
+* "action" will be set to "login" to indicate a login response.
 * "result" will be set to "ok" if the login is successful or "fail" in case of an error.
 * "message" (optional) will provide a failure reason in case of a login failure.
 
@@ -108,11 +113,18 @@ The server will respond with a JSON object in the following format:
 ```json
 {
   "response" : true,
+  "action" : "usersOnline",
   "result" : "ok or fail",
-  "values" : [ "<USERNAMES>", ... ] (if ok)
+  "values" : [ "<USERNAMES>", ... ], (if ok)
   "message" : "failure reason" (if fail)
 }
 ```
+
+* "response" will be true to indicate a response.
+* "action" will be set to "usersOnline" to indicate a usersOnline response.
+* "result" will be set to "ok" if the request is successful or "fail" in case of an error.
+* "values" (on success) will contain a list of online users.
+* "message" (on fail) will provide a failure reason in case of a request failure.
 
 ## Send Message Request
 To send message to an online user, client must be logged in and send following request:
@@ -129,7 +141,13 @@ The server will respond with a JSON object in the following format:
 ```json
 {
   "response" : true,
+  "action" : "sendto",
   "result" : "ok or fail",
   "message" : "failure reason" (optional)
 }
 ```
+* "response" will be true to indicate a response.
+* "action" will be set to "sendto" to indicate a sendto response.
+* "result" will be set to "ok" if the request is successful or "fail" in case of an error.
+* "message" (optional) will provide a failure reason in case of a request failure.
+
