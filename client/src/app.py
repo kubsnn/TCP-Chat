@@ -1,11 +1,13 @@
 import eel
 import os
 import tcp
-from decouple import config
 import threading
+from env import get_host_addr, get_port_no
 
-SERVER_ADDR = config('HOST_ADDR')
-PORT_NO = int(config('PORT_NO'))
+
+
+SERVER_ADDR = get_host_addr()
+PORT_NO = get_port_no()
 
 client_socket = None
 
