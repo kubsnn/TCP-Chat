@@ -29,7 +29,7 @@ run:
 # Target for building the binaries using pyinstaller
 binaries: install build
 	pip install pyinstaller
-	pyinstaller -n TCPChatClient --add-data ".\TCPChatClient\web\:web" --add-data ".\TCPChatClient\.env:." -p .\TCPChatClient\ .\TCPChatClient\app.py --onefile
+	python -m eel .\TCPChatClient\app.py .\TCPChatClient\web
 
 # Target to clean all Node.js files and remove the 'web' directory
 clean:
