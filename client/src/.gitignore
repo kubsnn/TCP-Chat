@@ -44,6 +44,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+env.py
 
 ### BASIC NODE GITIGNORE
 # Ignore config and node files.

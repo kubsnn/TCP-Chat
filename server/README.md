@@ -1,3 +1,4 @@
+
 # Server Documentation
 
 This documentation provides information about the available requests for the TCP Chat server. Each request must be in JSON format.
@@ -74,3 +75,4 @@ The server will respond with a JSON object in the same format as the register re
 * "response" will be true to indicate a response.
 * "result" will be set to "ok" if the login is successful or "fail" in case of an error.
 * "message" (optional) will provide a failure reason in case of a login failure.
+
