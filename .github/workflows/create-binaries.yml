@@ -14,7 +14,7 @@ jobs:
         os: [ubuntu-20.04, windows-2019, macos-12]
     runs-on: ${{ matrix.os }}
     permissions:
-      contents: write
+      contents: read
       packages: write
 
     steps:
@@ -40,12 +40,12 @@ jobs:
             curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_linux_amd64
             ls -la
             chmod +x task
-            mv task /usr/local/bin/
+            sudo mv task /usr/local/bin/
           elif [ "$RUNNER_OS" == "macOS" ]; then
             curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_darwin_amd64
             ls -la
             chmod +x task
-            mv task /usr/local/bin/
+            sudo mv task /usr/local/bin/
           fi
 
       - name: Go to Client Directory
