@@ -59,12 +59,25 @@ void ClientHandler::run() {
 bool ClientHandler::isValidRequest(const json& data) {
     if (!data.is<json::dictionary>()) return false;
     const auto& dict = data.get<json::dictionary>();
-    return dict.contains("action") && Controller(client_, cache_).hasMethod(dict["action"].get<std::string>());
+    if (!dict.contains("action")) return false;
+    if (!dict["action"].is<std::string>()) return false;
+    
+    const auto& action = dict["action"].get<std::string>();
+    for (const auto& controller : controllers_) {
+        if (controller->hasMethod(action)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 json ClientHandler::execute(const json& query) {
     try {
-        return Controller(client_, cache_).invoke(query["action"].get<std::string>(), query);
+        for (const auto& controller : controllers_) {
+            if (controller->hasMethod(query["action"].get<std::string>())) {
+                return controller->invoke(query["action"].get<std::string>(), query);
+            }
+        }
     } catch (const std::exception& ex) {
         logger.warning() << "Exception occured: " << ex.what() << std::endl;
         return IController().fatal();
@@ -72,6 +85,8 @@ json ClientHandler::execute(const json& query) {
         logger.error() << "Unknown exception occured." << std::endl;
         return IController().fatal();
     }
+    logger.error() << "Unreachable section encountered!" << std::endl;
+    return IController().fatal();
 }
 
 bool ClientHandler::sendResponse(const json& response) {

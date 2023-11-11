@@ -15,7 +15,7 @@ public:
     friend class ClientHandler;
     
     bool hasMethod(const std::string& method) const;
-    json invoke(const std::string& method, const json& data) const;
+    virtual json invoke(const std::string& method, const json& data) const;
     
 protected:
     void addMethod(std::string name, std::function<json(const json&)> method);

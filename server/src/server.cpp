@@ -70,6 +70,12 @@ void Server::buildServer() {
     }
     logger.info() << "Socket OK." << std::endl;
 
+    int opt = 1;
+    if (setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        logger.error() << "Setting socket option failed. Closing application..." << std::endl;
+        exit(-1);
+    }
+
     if (bind(sockfd_, (sockaddr*)&addr_, sizeof(addr_)) < 0) {
         logger.error() << "Binding failed. Closing application..." << std::endl;
         exit(-1);

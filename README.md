@@ -107,6 +107,7 @@ To get list of online users, client must be logged in and send following request
   "action" : "usersOnline"
 }
 ```
+* "action" must be set to "usersOnline".
 
 ## Online Users Response
 The server will respond with a JSON object in the following format:
@@ -135,6 +136,9 @@ To send message to an online user, client must be logged in and send following r
   "message" : "<DATA...>"
 }
 ```
+* "action" must be set to "sendto".
+* "who" must be set to the username of the recipient.
+* "message" must be set to the message to be sent.
 
 ## Send Message Response
 The server will respond with a JSON object in the following format:
@@ -151,3 +155,106 @@ The server will respond with a JSON object in the following format:
 * "result" will be set to "ok" if the request is successful or "fail" in case of an error.
 * "message" (optional) will provide a failure reason in case of a request failure.
 
+## Invite Friend Request
+To invite a user to a friend list, client must be logged in and send following request:
+```json
+{
+  "action" : "invite",
+  "who" : "<USERNAME>"
+}
+```
+* "action" must be set to "invite".
+* "who" must be set to the username of the recipient.
+
+## Invite Friend Response
+The server will respond with a JSON object in the following format:
+```json
+{
+  "response" : true,
+  "action" : "invite",
+  "result" : "ok or fail",
+  "message" : "failure reason" (optional)
+}
+```
+* "response" will be true to indicate a response.
+* "action" will be set to "invite" to indicate a invite response.
+* "result" will be set to "ok" if the request is successful or "fail" in case of an error.
+* "message" (optional) will provide a failure reason in case of a request failure.
+
+## Accept Friend Request
+To accept a friend request, client must be logged in and send following request:
+```json
+{
+  "action" : "accept",
+  "who" : "<USERNAME>"
+}
+```
+* "action" must be set to "accept".
+* "who" must be set to the username of the recipient.
+
+## Accept Friend Response
+The server will respond with a JSON object in the following format:
+```json
+{
+  "response" : true,
+  "action" : "accept",
+  "result" : "ok or fail",
+  "message" : "failure reason" (optional)
+}
+```
+* "response" will be true to indicate a response.
+* "action" will be set to "accept" to indicate a accept response.
+* "result" will be set to "ok" if the request is successful or "fail" in case of an error.
+* "message" (optional) will provide a failure reason in case of a request failure.
+
+## Get Friend List Request
+To get a friend list, client must be logged in and send following request:
+```json
+{
+  "action" : "friends"
+}
+```
+* "action" must be set to "friends".
+
+## Get Friend List Response
+The server will respond with a JSON object in the following format:
+```json
+{
+  "response" : true,
+  "action" : "friends",
+  "result" : "ok or fail",
+  "values" : [ { "username" : "<USERNAME>", "online" : true/false }, ...], (if ok)
+  "message" : "failure reason" (if fail)
+}
+```
+* "response" will be true to indicate a response.
+* "action" will be set to "friends" to indicate a friends response.
+* "result" will be set to "ok" if the request is successful or "fail" in case of an error.
+* "values" (on success) will contain a list of friends.
+* "message" (on fail) will provide a failure reason in case of a request failure.
+
+## Get Invitations Request
+To get a list of invitations, client must be logged in and send following request:
+```json
+{
+  "action" : "invitations"
+}
+```
+* "action" must be set to "invitations".
+
+## Get Invitations Response
+The server will respond with a JSON object in the following format:
+```json
+{
+  "response" : true,
+  "action" : "invitations",
+  "result" : "ok or fail",
+  "values" : [ { "username" : "<USERNAME>" }, ...], (if ok)
+  "message" : "failure reason" (if fail)
+}
+```
+* "response" will be true to indicate a response.
+* "action" will be set to "invitations" to indicate a invitations response.
+* "result" will be set to "ok" if the request is successful or "fail" in case of an error.
+* "values" (on success) will contain a list of invitations.
+* "message" (on fail) will provide a failure reason in case of a request failure.

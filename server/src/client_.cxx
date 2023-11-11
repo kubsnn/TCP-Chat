@@ -111,6 +111,35 @@ public:
                 socket_.write(data.to_string(), server_crypto_);
                 msg = "";
             }
+            if (msg == "logout") {
+                data["action"] = "logout";
+                socket_.write(data.to_string(), server_crypto_);
+                msg = "";
+            }
+            if (msg == "friends") {
+                data["action"] = "friends";
+                socket_.write(data.to_string(), server_crypto_);
+                msg = "";
+            }
+            if (msg == "invite") {
+                std::cin >> msg;
+                data["action"] = "invite";
+                data["who"] = msg;
+                socket_.write(data.to_string(), server_crypto_);
+                msg = "";
+            }
+            if (msg == "accept") {
+                std::cin >> msg;
+                data["action"] = "accept";
+                data["who"] = msg;
+                socket_.write(data.to_string(), server_crypto_);
+                msg = "";
+            }
+            if (msg == "invitations") {
+                data["action"] = "invitations";
+                socket_.write(data.to_string(), server_crypto_);
+                msg = "";
+            }
         }
 
         socket_.close();
