@@ -61,6 +61,7 @@ jobs:
 
       - name: Check Taskfile
         run: |
+          ls -la
           task --version
           task help
 
