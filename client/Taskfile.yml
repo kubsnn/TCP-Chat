@@ -24,7 +24,7 @@ tasks:
 
   install:
     cmds:
-      - cd src/web-src && npm install
+      - cd src/web-src && npm ci
       - cd src && pip3 install -r requirements.txt
 
   build:

@@ -1,6 +1,6 @@
 <script setup>
 import { FwbButton, FwbHeading } from 'flowbite-vue'
-</script >
+</script>
 
 <script>
 export default {
