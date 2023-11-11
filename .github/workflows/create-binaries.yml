@@ -56,30 +56,30 @@ jobs:
           fi
           ls -la
 
-      - name: Change to the "client" directory
-        run: cd client
-        working-directory: ${{ github.workspace }}/client
-
       - name: Check Taskfile
         run: |
           ls -la
           task --version
           task help
+        working-directory: ${{ github.workspace }}/client
 
       - name: Install Dependencies
         run: task install
+        working-directory: ${{ github.workspace }}/client
 
       - name: Build App
         run: task build
+        working-directory: ${{ github.workspace }}/client
 
       - name: Create Binaries
         run: task binaries
+        working-directory: ${{ github.workspace }}/client
 
       - name: Upload Binaries
         uses: actions/upload-artifact@v3
         with:
           name: binaries
-          path: ./dist
+          path: ./client/dist
 
   release:
     needs: build
