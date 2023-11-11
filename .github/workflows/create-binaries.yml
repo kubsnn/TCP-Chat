@@ -29,27 +29,25 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
 
       - name: Set up Taskfile
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
             curl -L -o task.exe https://github.com/go-task/task/releases/download/v3.12.0/task_windows_amd64.exe
+            ls -la
           elif [ "$RUNNER_OS" == "Linux" ]; then
-            if [ "$RUNNER_ARCH" == "x64" ]; then
-              curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_linux_amd64
-            elif [ "$RUNNER_ARCH" == "arm64" ]; then
-              curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_linux_arm64
-            fi
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-            if [ "$RUNNER_ARCH" == "x64" ]; then
-              curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_darwin_amd64
-            elif [ "$RUNNER_ARCH" == "arm64" ]; then
-              curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_darwin_arm64
-            fi
+            curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_linux_amd64
+            ls -la
+            chmod +x task
+            mv task /usr/local/bin/
           fi
-          chmod +x task
-          mv task /usr/local/bin/
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            curl -L -o task https://github.com/go-task/task/releases/download/v3.12.0/task_darwin_amd64
+            ls -la
+            chmod +x task
+            mv task /usr/local/bin/
+          fi
 
       - name: Go to Client Directory
         run: cd client
