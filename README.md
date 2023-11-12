@@ -1,5 +1,6 @@
 # Server Documentation
-![Build CI](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci.yml/badge.svg) </br>
+![Build CI](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci.yml/badge.svg)
+![Tests CI](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci_tests.yml/badge.svg) </br>
 This documentation provides information about the available requests for the TCP Chat server. Each request must be in JSON format.
 
 ## Data Format Requirements
