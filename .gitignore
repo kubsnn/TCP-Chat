@@ -53,3 +53,9 @@ Makefile
 
 # Ignore the binary directory
 bin/
+server/test/users.db
+server/test/Testing/Temporary/LastTestsFailed.log
+server/test/Testing/Temporary/LastTest.log
+server/test/Testing/Temporary/CTestCostData.txt
+server/test/account_controller_tests
+server/test/friend_list_tests

@@ -1,9 +1,8 @@
-name: build
+name: tests
 
 on:
   push:
     branches:
-      - feature/server
       - feature/server-tests
 
 jobs:
@@ -23,8 +22,22 @@ jobs:
         sudo apt-get install cmake
         sudo apt-get install make
 
-    - name: Build server
+    - name: Build tests
       run: |
-        cd server
-        cmake .
-        make
+            cd server/test
+            cmake .
+            make
+
+    - name: Account tests
+      run: |
+            cd server/test
+            ./account_controller_tests
+
+    - name: Friendlist tests
+      run: |
+            cd server/test
+            ./friend_list_tests
+        
+
+
+    
