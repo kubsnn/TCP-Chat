@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/server
+      - feature/server-tests
 
 jobs:
   build:
@@ -25,5 +26,5 @@ jobs:
     - name: Build server
       run: |
         cd server
-        cmake CMakelists.txt
+        cmake .
         make

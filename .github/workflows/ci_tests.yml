@@ -1,0 +1,47 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - feature/server-tests
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc
+        sudo apt-get install g++
+        sudo apt-get install libssl-dev
+        sudo apt-get install cmake
+        sudo apt-get install make
+        sudo apt-get install libgtest-dev
+        cd /usr/src/gtest
+        sudo cmake CMakeLists.txt
+        sudo make
+
+    - name: Build tests
+      run: |
+            cd server/test
+            cmake .
+            make
+
+    - name: Account tests
+      run: |
+            cd server/test
+            ./account_controller_tests
+
+    - name: Friendlist tests
+      run: |
+            cd server/test
+            ./friend_list_tests
+        
+
+
+    

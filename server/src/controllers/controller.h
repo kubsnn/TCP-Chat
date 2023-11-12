@@ -11,13 +11,23 @@ class Controller : public IController {
 public:
     Controller(Client& client, Cache& cache);
 
+    json invoke(const std::string& method, const json& data) const override;
 private:
-    json signup(const json& data) const;
-    json signin(const json& data) const;
-    json signout(const json& data) const;
+
     json sendTo(const json& data) const;
     json usersOnline(const json& data) const;
+    json addFriend(const json& data) const;
+    json getFriends(const json& data) const;
+    json acceptInvitation(const json& data) const;
+    json getInvitations(const json& data) const;
 
+    bool verifySendToRequest(const json& data) const;
+    bool verifyUsersOnlineRequest(const json& data) const;
+    bool verifyAddFriendRequest(const json& data) const;
+    bool verifyGetFriendsRequest(const json& data) const;
+    bool verifyAcceptInvitationRequest(const json& data) const;
+    bool verifyGetInvitationsRequest(const json& data) const;
+    
     Client& client_;
     Cache& cache_;
 };
