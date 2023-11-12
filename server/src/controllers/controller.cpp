@@ -79,6 +79,14 @@ json Controller::addFriend(const json& data) const {
     }
 
     auto user = db.getByName(client_.username());
+    auto invitations = db.getInvitations(user.id());
+
+    for (const auto& inv : invitations) {
+        if (inv.username() == friend_name) {
+            return fail("you are already invited");
+        }
+    }
+
     if (!db.addFriend(user.id(), friend_name)) {
         return fail("already friends");
     }
