@@ -49,6 +49,10 @@ target_link_libraries(account_controller_tests ${MY_LIBS})
 add_executable(friend_list_tests friend_list_tests.cpp)
 target_link_libraries(friend_list_tests ${MY_LIBS})
 
+add_executable(rsa_tests rsa_tests.cpp)
+target_link_libraries(rsa_tests ${MY_LIBS})
+
 # add the test
 add_test(NAME AccountControllerTests COMMAND account_controller_tests)
 add_test(NAME FriendListTests COMMAND friend_list_tests)
+add_test(NAME RSATests COMMAND rsa_tests)
