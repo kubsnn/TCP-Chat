@@ -1,26 +1,19 @@
 name: tests
 
-on:
-  push:
-    branches:
-      - feature/server-tests
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
     - name: Install dependencies
+      run: sudo apt-get install libssl-dev libsqlite3-dev
+
+    - name: Install Google Test
       run: |
-        sudo apt-get update
-        sudo apt-get install gcc
-        sudo apt-get install g++
-        sudo apt-get install libssl-dev
-        sudo apt-get install cmake
-        sudo apt-get install make
         sudo apt-get install libgtest-dev
         cd /usr/src/gtest
         sudo cmake CMakeLists.txt
@@ -28,20 +21,48 @@ jobs:
 
     - name: Build tests
       run: |
-            cd server/test
-            cmake .
-            make
+        cd server/test
+        cmake .
+        make
 
-    - name: Account tests
+    - name: Upload test binaries
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-binaries
+        path: server/test/*.test
+
+  account_tests:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Download test binaries
+      uses: actions/download-artifact@v2
+      with:
+        name: test-binaries
+        path: server/test
+
+    - name: Run Account tests
       run: |
-            cd server/test
-            ./account_controller_tests
+        cd server/test
+        ./account_controller_tests.test
 
-    - name: Friendlist tests
+  friendlist_tests:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Download test binaries
+      uses: actions/download-artifact@v2
+      with:
+        name: test-binaries
+        path: server/test
+
+    - name: Run Friendlist tests
       run: |
-            cd server/test
-            ./friend_list_tests
-        
-
-
-    
+        cd server/test
+        ./friendlist_controller_tests.test
