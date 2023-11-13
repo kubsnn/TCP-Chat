@@ -259,3 +259,4 @@ The server will respond with a JSON object in the following format:
 * "result" will be set to "ok" if the request is successful or "fail" in case of an error.
 * "values" (on success) will contain a list of invitations.
 * "message" (on fail) will provide a failure reason in case of a request failure.
+
