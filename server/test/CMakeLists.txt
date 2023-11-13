@@ -43,12 +43,12 @@ target_link_libraries(my_lib sqlite3 OpenSSL::SSL OpenSSL::Crypto pthread)
 set(MY_LIBS ${GTEST_BOTH_LIBRARIES} pthread sqlite3 OpenSSL::SSL OpenSSL::Crypto my_lib)
 
 # add the executable
-add_executable(account_controller_tests.test account_controller_tests.cpp)
-target_link_libraries(account_controller_tests.test ${MY_LIBS})
+add_executable(account_controller_tests account_controller_tests.cpp)
+target_link_libraries(account_controller_tests ${MY_LIBS})
 
-add_executable(friend_list_tests.test friend_list_tests.cpp)
-target_link_libraries(friend_list_tests.test ${MY_LIBS})
+add_executable(friend_list_tests friend_list_tests.cpp)
+target_link_libraries(friend_list_tests ${MY_LIBS})
 
 # add the test
-add_test(NAME AccountControllerTests COMMAND account_controller_tests.test)
-add_test(NAME FriendListTests COMMAND friend_list_tests.test)
+add_test(NAME AccountControllerTests COMMAND account_controller_tests)
+add_test(NAME FriendListTests COMMAND friend_list_tests)
