@@ -4,7 +4,7 @@ tasks:
   build:
     - echo "Building for Macos"
     - rm -r 'src/web/assets' || true
-    - cd src/web-src && npm run build
+    - cd src/web-src && npm run build --emptyOutDir
 
   clean:
     cmds:
