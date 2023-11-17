@@ -39,6 +39,7 @@ jobs:
             curl -L -o taskfile.zip https://github.com/go-task/task/releases/download/v3.31.0/task_windows_amd64.zip
             unzip -q taskfile.zip -d .
             set PATH="PATH:$(pwd)"
+            echo $PATH
           elif [ "$RUNNER_OS" == "Linux" ]; then
             echo "Download Taskfile for Linux"
             curl -L -o taskfile.tar.gz https://github.com/go-task/task/releases/download/v3.31.0/task_linux_amd64.tar.gz
