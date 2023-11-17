@@ -46,27 +46,31 @@ jobs:
       - name: Download Task executable for ${{ matrix.os }}
         run: |
           if [ ! -f "task/task" ]; then
+            echo "Download Taskfile for ${{ matrix.os }}"
             if  [ "$RUNNER_OS" == "Windows" ]; then
-              echo "Download Task executable for Windows"
-              curl -L -o task.zip https://github.com/go-task/task/releases/download/v3.31.0/task_windows_amd64.zip
-              unzip -q task.zip -d task
+              curl -L -o taskfile.zip https://github.com/go-task/task/releases/download/v3.31.0/task_windows_amd64.zip
+              unzip -q taskfile.zip -d task
             elif [ "$RUNNER_OS" == "Linux" ]; then
-              echo "Download Task executable for Linux"
-              curl -L -o task.tar.gz https://github.com/go-task/task/releases/download/v3.31.0/task_linux_amd64.tar.gz
-              tar -xvf task.tar.gz -C task
+              curl -L -o taskfile.tar.gz https://github.com/go-task/task/releases/download/v3.31.0/task_linux_amd64.tar.gz
+              tar -xvf taskfile.tar.gz -C task
             elif [ "$RUNNER_OS" == "macOS" ]; then
-              echo "Download Task executable for macOS"
-              curl -L -o task.tar.gz  https://github.com/go-task/task/releases/download/v3.31.0/task_darwin_amd64.tar.gz
-              tar -xvf task.tar.gz -C task
+              curl -L -o taskfile.tar.gz  https://github.com/go-task/task/releases/download/v3.31.0/task_darwin_amd64.tar.gz
+              tar -xvf taskfile.tar.gz -C task
             else
               echo "Unknown OS"
               exit 1
             fi
-            chmod +x task/task
+          ls -la
           else
             echo "Using cached Task executable"
           fi
           ls -la task
+        shell: bash
+
+      - name: Add task to path
+        run: |
+          chmod -R +x task
+          sudo mv task/* /usr/local/bin/
         shell: bash
 
       - name: Check Taskfile
