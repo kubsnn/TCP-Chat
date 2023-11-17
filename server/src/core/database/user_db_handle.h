@@ -3,13 +3,15 @@
 #define __USER_DATABASE_H__
 
 #include "user.h"
-#include <sqlite/sqlite3.h>
+#include "../utils/globals.h"
+#include <sqlite3.h>
+#include <vector>
 
 void configure_databases();
 
 class UserDbHandle {
 public:
-    inline static std::string database_name = "users.db";
+    inline static const auto database_path = executable_dir / "users.db";
 
     UserDbHandle();
     UserDbHandle(const UserDbHandle&) = delete;
@@ -21,11 +23,21 @@ public:
     bool add(const User& user) const;
     bool exists(const std::string& username) const;
     const User getById(int id) const;
+    const User getById(int id, bool include_friends) const;
     const User getByName(const std::string& username) const;
+    const User getByName(const std::string& username, bool include_friends) const;
     bool verify(const User& credentials) const;
+
+    bool addFriend(int id, const std::string& friend_name) const;
+    bool acceptInvitation(int id, const std::string& friend_name) const;
+    std::vector<User> getFriends(int id) const;
+    std::vector<User> getInvitations(int id) const;
 
     void drop() const; 
 private:
+    bool isInvitedBy(int id, int friend_id) const;
+    void addFriendForce(int id, int friend_id) const;
+
     void tryInitializeTables();
 
     sqlite3* db_;

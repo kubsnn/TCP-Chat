@@ -31,6 +31,10 @@ public:
         return LogEntry(*this, "[fatal] ");
     }
 
+    inline LogEntry debug() {
+        return LogEntry(*this, "[debug] ");
+    }
+
 private:
     std::ostream& os_;
     std::mutex mutex_;

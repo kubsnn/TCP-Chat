@@ -4,7 +4,7 @@ tasks:
   build:
     - echo "Building for Windows"
     - powershell rmdir 'src/web/assets' -Recurse -Force || true
-    - cd src/web-src && npm run build --emptyOutDir
+    - cd src/web-src && npm i && npm run build --emptyOutDir
 
   clean:
     - powershell rmdir src/web -Recurse -Force || true

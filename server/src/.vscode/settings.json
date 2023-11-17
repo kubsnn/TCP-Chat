@@ -63,7 +63,8 @@
         "format": "cpp",
         "iomanip": "cpp",
         "span": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "codecvt": "cpp"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.default.includePath": [

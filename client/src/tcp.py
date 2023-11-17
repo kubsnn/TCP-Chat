@@ -4,9 +4,15 @@ import ipaddress
 import struct
 import eel
 import time
+import json
+import os
+import threading
 
-messageStorage = []
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.backends import default_backend
 
+from typing import Callable
 
 def resolve_to_ip(host):
     try:
@@ -21,64 +27,287 @@ def resolve_to_ip(host):
         except socket.gaierror:
             return None  # Unable to resolve the hostname
 
-def create_socket(server_ip, server_port):
-    try:
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect((server_ip, server_port))
-        return client_socket
-    except socket.error as e:
-        print(str(e))
+class Client:
+    def __init__(self, host: str, port: int):
+        print(host, port)
+        """
+        Initializes a new instance of the Client class.
 
-# Function to listen for messages from the server
-def receive_data(client_socket):
-    print("Waiting for message from the server...")
-    try:
-        #get message size from 4 bytes
-        message_size = client_socket.recv(4)
-        message = client_socket.recv(struct.unpack('I', message_size)[0]).decode('utf-8')
+        Args:
+            host (str): The hostname or IP address of the server.
+            port (int): The port number to connect to.
+        """
+        self.host = host
+        self.port = port
+        self.socket = None
+        self.private_key, self.public_key = self.__load_or_generate_keys()
+        self.server_public_key = None
 
-        if not message:
-            return None
-        print("Received:", message)
-        eel.show_toast("success", "Received: " + message, 5000) # type: ignore
-        return message
+    def connect(self) -> bool:
+        """
+        Connects to the server.
 
-    except ConnectionResetError:
-        return None
+        Returns:
+            bool: True if the connection is successful, False otherwise.
+        """
+        return self.__initialize_connection(resolve_to_ip(self.host), self.port)
 
-def listen_data(client_socket):
-    print("Listening for messages from the server...")
-    while True:
+    def set_listener(self, callback: Callable) -> None:
+        """
+        Sets the listener callback function to handle received data.
+
+        Args:
+            callback (callable): The callback function to handle received data.
+        """
+        def listener():
+            while True:
+                data = self.__receive()
+                if data is None: # connection closed
+                    print("Listener thread closed!")
+                    break
+
+                callback(data)
+
+        listener_thread = threading.Thread(target=listener)
+        listener_thread.start()
+
+    def send(self, data: str) -> bool:
+        """
+        Sends data to the server.
+
+        Args:
+            data (str): The data to send.
+
+        Returns:
+            bool: True if the data is sent successfully, False otherwise.
+        """
+        return bool(self.__send(data))
+
+    def close(self) -> None:
+        """
+        Closes the connection to the server.
+        """
+        if self.socket is not None:
+            self.socket.close()
+
+    def encode(self, string: str) -> str:
+        """
+        Encodes a string using UTF-8 and escapes special characters.
+
+        Args:
+            string (str): The string to encode.
+
+        Returns:
+            str: The encoded string.
+        """
+        return repr(string.encode('utf-8')[1:].decode('unicode_escape'))[1:-1]
+
+    # PRIVATE METHODS:
+
+    def __initialize_connection(self, host: str, port: int) -> bool:
+        """
+        Initializes the connection to the server.
+
+        Args:
+            host (str): The hostname or IP address of the server.
+            port (int): The port number to connect to.
+
+        Returns:
+            bool: True if the connection is successful, False otherwise.
+        """
         try:
-            message = receive_data(client_socket)
-            if message is None:
-                break
-            messageStorage.append(message)
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.connect((host, port))
+        except:
+            return False
 
-        except ConnectionResetError:
-            break
+        return self.__exchange_public_keys()
 
+    def __exchange_public_keys(self) -> bool:
+        """
+        Exchanges public keys with the server.
 
+        Returns:
+            bool: True if the public keys are exchanged successfully, False otherwise.
+        """
+        data = self.__receive_raw()
+        if data is None:
+            return False
 
-def send_data(data, client_socket):
-    try:
-        #do not encode if data is int
-        if isinstance(data, int):
-            # Convert the integer to 4 bytes
-            #data.to_bytes(4, byteorder='big', signed=True)
-            data = struct.pack('I', data)
-            print("Size Send Response: ", client_socket.send(data))
-            return
-        #encode data as utf-8
-        data = data.encode('utf-8')
-        print("Message Send Response: ", client_socket.send(data))
-    except socket.error as e:
-        eel.send_toast("danger", "Unable to send data to server!", 2000) # type: ignore
-        print(str(e))
+        my_public_key = self.public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.PKCS1
+        )
 
+        self.server_public_key = serialization.load_pem_public_key(
+            data["public_key"].encode('utf-8'),
+            backend=default_backend()
+        )  
 
+        my_key = { "action" : "init", "public_key" : my_public_key.decode('utf-8') }
+        try:
+            self.__send(json.dumps(my_key))
+        except:
+            print("Server is offline!")
+            return False
+        return True
+
+    def __send(self, msg: str) -> bool:
+        """
+        Sends encrypted data to the server.
+
+        Args:
+            data (str): The data to send.
+
+        Returns:
+            bool: True if the data is sent successfully, False otherwise.
+        """
+
+        data = msg.encode('utf-8')
+        length = struct.pack('I', len(repr(data)))
+
+        try:
+            self.socket.send(length)
+            buffer_size = 245
+            for i in range(0, len(data), buffer_size):
+                count = min(buffer_size, len(data) - i)
+                chunk = data[i:i+count]
+                encrypted_chunk = self.server_public_key.encrypt(chunk, padding.PKCS1v15())
+                self.socket.send(encrypted_chunk)
+            
+        except socket.error as e:
+            print(str(e))
+            return False
+
+        return True
+
+    def __receive(self) -> dict:
+        """
+        Receives and decrypts data from the server.
+
+        Returns:
+            dict: The received data as a dictionary.
+        """
+        if self.socket is None:
+            return None
+
+        length = struct.unpack('I', self.socket.recv(4))[0]
+        data = b''
+        buffer_size = 256
+        for i in range(0, length, buffer_size):
+            count = min(buffer_size, length - i)
+            try:
+                chunk = self.socket.recv(count)
+            except:
+                return None
+            
+            decrypted_chunk = self.private_key.decrypt(chunk, padding.PKCS1v15())
+            data += decrypted_chunk
+
+        print(data.decode('utf-8').rstrip('\0'))
+
+        return json.loads(data.decode('utf-8').rstrip('\0'))
+
+    def __receive_raw(self) -> dict:
+        """
+        Receives raw data from the server.
+
+        Returns:
+            dict: The received data as a dictionary.
+        """
+        if self.socket is None:
+            return None
+
+        try:
+            length = struct.unpack('I', self.socket.recv(4))[0]
+            data = self.socket.recv(length)
+        except:
+            print("Server is offline!")
+            return None
+
+        return json.loads(data.decode('utf-8').rstrip('\0'))
+
+    def __load_or_generate_keys(self) -> tuple:
+        """
+        Loads or generates RSA keys.
+
+        Returns:
+            tuple: A tuple containing the private key and the public key.
+        """
+        # Check if the keys already exist
+        if os.path.isfile('private_key.pem') and os.path.isfile('public_key.pem'):
+            return self.__load_keys()
+
+        # Generate a new RSA key
+        key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=default_backend()
+        )
+
+        self.__write_keys_to_file(key)
+
+        return key, key.public_key()
+
+    def __load_keys(self) -> tuple:
+        """
+        Loads RSA keys from files.
+
+        Returns:
+            tuple: A tuple containing the private key and the public key.
+        """
+        # Load the keys from files
+        with open('private_key.pem', 'rb') as f:
+            priv_key = serialization.load_pem_private_key(
+                f.read(),
+                password=None,
+                backend=default_backend()
+            )
+
+        with open('public_key.pem', 'rb') as f:
+            pub_key = serialization.load_pem_public_key(
+                f.read(),
+                backend=default_backend()
+            )
+
+        return priv_key, pub_key
+
+    def __write_keys_to_file(self, key) -> None:
+        """
+        Writes RSA keys to files.
+
+        Args:
+            key: The RSA key to write.
+        """
+        # Get the public key in PKCS1 format
+        public_key = key.public_key().public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.PKCS1
+        )
+
+        # Get the private key in PKCS1 format
+        private_key = key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+
+        # Save the keys to files
+        with open('private_key.pem', 'wb') as f:
+            f.write(private_key)
+
+        with open('public_key.pem', 'wb') as f:
+            f.write(public_key)
 
 if __name__ == "__main__":
-    host = '0.0.0.0'  # Listen on all available network interfaces
-    port = 42069  # Choose an available port number
+    host = '127.0.0.1'  # Listen on all available network interfaces
+    port = 1100  # Choose an available port number
+    client = Client(host, port)
+    client.connect()
+    client.set_listener(lambda data: print(data["values"][0].encode().decode('unicode-escape')) if "values" in data else print(data)) # print Łukasz
+
+    client.send(json.dumps({"action" : "register", "creds": {"username" : "Łukasz".encode('unicode_escape').decode('utf-8'), "password" : "test"}}))
+    client.send(json.dumps({"action" : "login", "creds": {"username" : "Łukasz".encode('unicode_escape').decode('utf-8'), "password" : "test"}}))
+    client.send(json.dumps({"action" : "usersOnline"}))
+    
 

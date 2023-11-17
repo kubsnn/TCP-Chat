@@ -3,6 +3,7 @@
 #define __WRAPPERS_H__
 
 #include "utils/constants.h"
+#include "utils/crypto.h"
 #include <jaszyk/json.hpp>
 #include <functional>
 #include <mutex>
@@ -18,8 +19,13 @@ public:
     Socket(Socket&& other) noexcept;
     Socket(const Socket& other);
     ~Socket();
-    json read() const;
-    bool write(const json& data) const;
+
+    std::string read() const;
+    std::string read(const Crypto& crypto) const;
+
+    bool write(const std::string& data) const;
+    bool write(const std::string& data, const Crypto& crypto) const;
+    
     void close();
     int fd() const;
 
