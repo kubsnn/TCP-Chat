@@ -54,9 +54,11 @@ jobs:
             elif [ "$RUNNER_OS" == "Linux" ]; then
               curl -L -o taskfile.tar.gz https://github.com/go-task/task/releases/download/v3.31.0/task_linux_amd64.tar.gz
               tar -xvf taskfile.tar.gz -C task
+              chmod -R +x task
             elif [ "$RUNNER_OS" == "macOS" ]; then
               curl -L -o taskfile.tar.gz  https://github.com/go-task/task/releases/download/v3.31.0/task_darwin_amd64.tar.gz
               tar -xvf taskfile.tar.gz -C task
+              chmod -R +x task
             else
               echo "Unknown OS"
               exit 1
@@ -70,8 +72,7 @@ jobs:
 
       - name: Add task to path
         run: |
-          chmod -R +x task
-          sudo mv task/* /usr/local/bin/
+          mv task/* /usr/local/bin/
         shell: bash
 
       - name: Check Taskfile
