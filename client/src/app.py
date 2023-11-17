@@ -28,11 +28,11 @@ def send_data(data):
 def connect_to_server():
     global client
     client = tcp.Client(tcp.resolve_to_ip(SERVER_ADDR), PORT_NO)
-    #if not client.connect():
-    #    print("Unable to connect to server!")
-    #    eel.show_toast("danger", "Unable to connect to server!", 2000) # type: ignore
-    #    return False
-    client.connect()
+    if not client.connect():
+        print("Unable to connect to server!")
+        eel.show_toast("danger", "Unable to connect to server!", 2000) # type: ignore
+        return False
+    
     eel.show_toast("success", "Connected to server!", 2000) # type: ignore
 
     def listener(response):

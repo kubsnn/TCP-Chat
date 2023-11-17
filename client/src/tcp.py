@@ -162,11 +162,6 @@ class Client:
         Returns:
             bool: True if the data is sent successfully, False otherwise.
         """
-        if self.server_public_key is None:
-            return False
-        
-        if self.socket is None:
-            return False
 
         data = msg.encode('utf-8')
         length = struct.pack('I', len(repr(data)))
