@@ -22,6 +22,8 @@ jobs:
         cd /usr/src/gtest
         sudo cmake CMakeLists.txt
         sudo make
+        sudo apt-get install sqlite3
+        sudo apt-get install libsqlite3-dev
 
     - name: Build tests
       run: |
@@ -38,6 +40,11 @@ jobs:
       run: |
             cd server/test
             ./friend_list_tests
+
+    - name: RSA tests
+      run: |
+            cd server/test
+            ./rsa_tests
         
 
 

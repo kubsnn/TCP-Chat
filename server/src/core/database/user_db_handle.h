@@ -4,7 +4,7 @@
 
 #include "user.h"
 #include "../utils/globals.h"
-#include <sqlite/sqlite3.h>
+#include <sqlite3.h>
 #include <vector>
 
 void configure_databases();
