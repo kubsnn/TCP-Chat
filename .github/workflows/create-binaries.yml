@@ -10,7 +10,37 @@ on:
         required: true
 
 jobs:
+  envVars:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Env files
+        run: |
+          cp env.py.template env.py
+          file_path="env.py"
+
+          # Replace HOST_ADDR with GitHub secret
+          sed -i "s/HOST_ADDR = \"[^\"]*\"/HOST_ADDR = \"$HOST_ADDR_SECRET\"/g" "$file_path"
+
+          # Replace PORT_NO with GitHub secret
+          sed -i "s/PORT_NO = [0-9]\+/PORT_NO = $PORT_NO_SECRET/g" "$file_path"
+
+        env:
+          HOST_ADDR_SECRET: ${{ secrets.HOST_ADDR_SECRET }}
+          PORT_NO_SECRET: ${{ secrets.PORT_NO_SECRET }}
+        working-directory: ${{ github.workspace }}/client/src
+        shell: bash
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: env
+          path: ${{ github.workspace }}/client/src/env.py
+
   build:
+    needs: envVars
     strategy:
       fail-fast: false
       matrix:
@@ -92,6 +122,12 @@ jobs:
           task help
         working-directory: ${{ github.workspace }}/client
         shell: bash
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: env
+          path: ${{ github.workspace }}/client/src
 
       - name: Install Dependencies
         run: task install
