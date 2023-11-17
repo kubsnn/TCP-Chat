@@ -33,26 +33,29 @@ jobs:
 
       - name: Set up Taskfile
         run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
+          if ( [ "$RUNNER_OS" == "Windows" ] ); then
             echo "Download Taskfile for Windows"
             curl -L -o taskfile.zip https://github.com/go-task/task/releases/download/v3.31.0/task_windows_amd64.zip
             tar -xvf taskfile.zip
             ls -la
             set PATH=%PATH%;%cd%
-          elif [ "$RUNNER_OS" == "Linux" ]; then
+          elif ( [ "$RUNNER_OS" == "Linux" ] ); then
             echo "Download Taskfile for Linux"
             curl -L -o taskfile.tar.gz https://github.com/go-task/task/releases/download/v3.31.0/task_linux_amd64.tar.gz
             tar -xvf taskfile.tar.gz
             ls -la
             chmod +x task
             sudo mv task /usr/local/bin/
-          elif [ "$RUNNER_OS" == "macOS" ]; then
+          elif ( [ "$RUNNER_OS" == "macOS" ] ); then
             echo "Download Taskfile for macOS"
             curl -L -o taskfile.tar.gz  https://github.com/go-task/task/releases/download/v3.31.0/task_darwin_amd64.tar.gz
             tar -xvf taskfile.tar.gz
             ls -la
             chmod +x task
             sudo mv task /usr/local/bin/
+          else
+            echo "Unknown OS"
+            exit 1
           fi
           ls -la
 
