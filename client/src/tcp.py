@@ -304,5 +304,10 @@ if __name__ == "__main__":
     port = 1100  # Choose an available port number
     client = Client(host, port)
     client.connect()
+    client.set_listener(lambda data: print(data["values"][0].encode().decode('unicode-escape')) if "values" in data else print(data)) # print Łukasz
+
+    client.send(json.dumps({"action" : "register", "creds": {"username" : "Łukasz".encode('unicode_escape').decode('utf-8'), "password" : "test"}}))
+    client.send(json.dumps({"action" : "login", "creds": {"username" : "Łukasz".encode('unicode_escape').decode('utf-8'), "password" : "test"}}))
+    client.send(json.dumps({"action" : "usersOnline"}))
     
 
