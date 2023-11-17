@@ -17,7 +17,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     permissions:
-      contents: write
+      contents: read
       packages: write
 
     steps:
@@ -38,17 +38,19 @@ jobs:
           cache-dependency-path: ./client/src/web-src/package-lock.json
 
       - name: Cache downloaded Task executable
-        uses: actions/cache@v2
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-task
         with:
           path: |
             task
-          key: ${{ runner.os }}-task-${{ hashFiles('**/task*') }}
+          key: ${{ runner.os }}-task-${{ hashFiles('**/task') }}
           restore-keys: |
             ${{ runner.os }}-task-
 
       - name: Download Task executable for ${{ matrix.os }}
         run: |
-          if [ ! -f "task/task" ]; then
+          if [ ! -f "task/task*" ]; then
             echo "Download Taskfile for ${{ matrix.os }}"
             mkdir task
             if  [ "$RUNNER_OS" == "Windows" ]; then
@@ -130,6 +132,8 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-20.04
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
