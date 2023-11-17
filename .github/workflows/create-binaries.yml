@@ -78,6 +78,22 @@ jobs:
         run: task binaries
         working-directory: ${{ github.workspace }}/client
 
+      - name: Rename binary for ${{ matrix.os }}
+        run: |
+          if  [ "$RUNNER_OS" == "Windows" ]; then
+            echo "Rename binary for Windows"
+            mv ./dist/TCPChat.exe ./dist/TCPChat-windows-amd64.exe
+          elif [ "$RUNNER_OS" == "Linux" ]; then
+            echo "Rename binary for Linux"
+            mv ./dist/TCPChat ./dist/TCPChat-linux-amd64
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            echo "Rename binary for macOS"
+            mv ./dist/TCPChat ./dist/TCPChat-darwin-amd64
+          else
+            echo "Unknown OS"
+            exit 1
+          fi
+
       - name: Upload Binaries
         uses: actions/upload-artifact@v3
         with:
