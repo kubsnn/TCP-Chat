@@ -38,20 +38,17 @@ jobs:
             echo "Download Taskfile for Windows"
             curl -L -o taskfile.zip https://github.com/go-task/task/releases/download/v3.31.0/task_windows_amd64.zip
             unzip -q taskfile.zip -d .
-            ls -la
             set PATH="PATH:$(pwd)"
           elif [ "$RUNNER_OS" == "Linux" ]; then
             echo "Download Taskfile for Linux"
             curl -L -o taskfile.tar.gz https://github.com/go-task/task/releases/download/v3.31.0/task_linux_amd64.tar.gz
             tar -xvf taskfile.tar.gz
-            ls -la
             chmod +x task
             sudo mv task /usr/local/bin/
           elif [ "$RUNNER_OS" == "macOS" ]; then
             echo "Download Taskfile for macOS"
             curl -L -o taskfile.tar.gz  https://github.com/go-task/task/releases/download/v3.31.0/task_darwin_amd64.tar.gz
             tar -xvf taskfile.tar.gz
-            ls -la
             chmod +x task
             sudo mv task /usr/local/bin/
           else
@@ -67,6 +64,7 @@ jobs:
           task --version
           task help
         working-directory: ${{ github.workspace }}/client
+        shell: bash
 
       - name: Install Dependencies
         run: task install
