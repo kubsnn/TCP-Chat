@@ -1,4 +1,6 @@
 #include "cache.h"
+#include "utils/globals.h"
+
 
 bool Cache::isUserOnline(const std::string& username) {
     std::shared_lock<std::shared_mutex> lock(users_online_mutex_);

@@ -1,13 +1,10 @@
 {
     "files.associations": {
-        "*.tcc": "h",
-        "variant": "h",
-        "iostream": "h",
-        "ostream": "cpp",
-        "thread": "cpp",
+        "any": "cpp",
         "array": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
+        "*.tcc": "cpp",
         "cctype": "cpp",
         "charconv": "cpp",
         "chrono": "cpp",
@@ -28,6 +25,8 @@
         "cwchar": "cpp",
         "cwctype": "cpp",
         "deque": "cpp",
+        "map": "cpp",
+        "set": "cpp",
         "string": "cpp",
         "unordered_map": "cpp",
         "vector": "cpp",
@@ -51,11 +50,13 @@
         "initializer_list": "cpp",
         "iomanip": "cpp",
         "iosfwd": "cpp",
+        "iostream": "cpp",
         "istream": "cpp",
         "limits": "cpp",
         "mutex": "cpp",
         "new": "cpp",
         "numbers": "cpp",
+        "ostream": "cpp",
         "semaphore": "cpp",
         "shared_mutex": "cpp",
         "span": "cpp",
@@ -63,12 +64,9 @@
         "stdexcept": "cpp",
         "stop_token": "cpp",
         "streambuf": "cpp",
+        "thread": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
-    },
-    "cmake.configureOnOpen": false,
-    "editor.fontLigatures": false,
-    "editor.fontFamily": "Cascadia Mono PL, Consolas, 'Courier New', monospace",
-    "editor.fontWeight": "600",
-    "editor.mouseWheelZoom": true
+        "typeinfo": "cpp",
+        "variant": "cpp"
+    }
 }

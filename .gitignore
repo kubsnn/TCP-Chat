@@ -39,3 +39,26 @@ client/build/
 client/dist
 server/log.txt
 server/src/server
+
+# Ignore CMake build files
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Ignore compiled files
+*.o
+*.so
+*.a
+*.out
+
+# Ignore the binary directory
+bin/
+server/test/users.db
+server/test/Testing/Temporary/LastTestsFailed.log
+server/test/Testing/Temporary/LastTest.log
+server/test/Testing/Temporary/CTestCostData.txt
+server/test/account_controller_tests
+server/test/friend_list_tests

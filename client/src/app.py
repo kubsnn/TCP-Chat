@@ -9,9 +9,10 @@ from env import get_host_addr, get_port_no
 SERVER_ADDR = get_host_addr()
 PORT_NO = get_port_no()
 
-client_socket = None
+client = tcp.Client(None, None)
 
 import sys
+import json
 
 @eel.expose
 def close_python(*args):
@@ -19,40 +20,35 @@ def close_python(*args):
 
 @eel.expose
 def send_data(data):
-    global client_socket
-    try:
-        print("Sending data: " + data)
-        dataLength = int(len(data))
-        print("Sending data of length: " + str(dataLength))
-        tcp.send_data(dataLength, client_socket)
-        tcp.send_data(data, client_socket)
-    except Exception as e:
-        print(e)
+    global client
+    print(data)
+    client.send(data)
 
 @eel.expose
 def connect_to_server():
-    global client_socket
-    client_socket = tcp.create_socket(tcp.resolve_to_ip(SERVER_ADDR), PORT_NO)
-    if client_socket is None:
-        print("Unable to connect to server!")
-        eel.show_toast("danger", "Unable to connect to server!", 2000) # type: ignore
-        return False
-
+    global client
+    client = tcp.Client(tcp.resolve_to_ip(SERVER_ADDR), PORT_NO)
+    #if not client.connect():
+    #    print("Unable to connect to server!")
+    #    eel.show_toast("danger", "Unable to connect to server!", 2000) # type: ignore
+    #    return False
+    client.connect()
     eel.show_toast("success", "Connected to server!", 2000) # type: ignore
+
+    def listener(response):
+        print("Received data: " + json.dumps(response))
+
+    client.set_listener(listener)
+
     return True
 
 @eel.expose
 def listen_to_server():
-    receive_thread = threading.Thread(target=tcp.listen_data, args=(client_socket,))
-    receive_thread.start()
+    return None
 
 @eel.expose
 def receive_from_server():
-    data = tcp.receive_data(client_socket)
-    if data == None:
-        eel.show_toast("danger", "No response from server!", 2000) # type: ignore
-        return False
-    return data
+    return None
 
 
 
@@ -63,7 +59,7 @@ def initProjectPath():
     os.chdir(project_directory)
 
 def startApp():
-    global client_socket
+    global client
     initProjectPath()
 
 
@@ -79,8 +75,8 @@ def startApp():
 
         print("Exiting...")
 
-        if client_socket is not None:
-            client_socket.close()
+        if client is not None:
+            client.close()
 
 
         #Handle errors and the potential hanging python.exe process
