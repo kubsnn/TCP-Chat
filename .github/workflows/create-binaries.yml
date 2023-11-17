@@ -28,11 +28,14 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: 3.11
+          cache: pip
 
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: npm
+          cache-dependency-path: ./client/src/web-src/package-lock.json
 
       - name: Cache downloaded Task executable
         uses: actions/cache@v2
@@ -72,7 +75,7 @@ jobs:
 
       - name: Add task to path
         run: |
-          mv task/* /usr/local/bin/
+          mv task/* /usr/bin/
         shell: bash
 
       - name: Check Taskfile
@@ -82,25 +85,6 @@ jobs:
           task help
         working-directory: ${{ github.workspace }}/client
         shell: bash
-
-      - name: Cache pip dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Cache node modules
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.npm
-            ~/.cache
-          key: ${{ runner.os }}-node-${{ hashFiles('**/*.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
 
       - name: Install Dependencies
         run: task install
