@@ -68,5 +68,5 @@
     },
     "python.analysis.autoImportCompletions": true,
     "python.analysis.typeCheckingMode": "basic",
-    "cmake.sourceDirectory": "/home/kubs/Desktop/TCP-Chat/server"
+    "cmake.sourceDirectory": "/home/kubs/Desktop/TCP-Chat Server/TCP-Chat/server"
 }

@@ -21,8 +21,8 @@ include_directories(${PROJECT_SOURCE_DIR}/src/controllers)
 # find OpenSSL
 find_package(OpenSSL 3 REQUIRED)
 
-# add the SQLite3 library
-add_library(sqlite3 STATIC src/include/sqlite/sqlite3.c)
+# find SQLITE3
+find_package(SQLite3 REQUIRED)
 
 # add the executable
 file(GLOB SOURCES "src/*.cpp" "src/core/*.cpp" "src/core/database/*.cpp" "src/core/utils/*.cpp" "src/controllers/*.cpp")
