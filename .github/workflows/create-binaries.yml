@@ -37,7 +37,7 @@ jobs:
           if  [ "$RUNNER_OS" == "Windows" ]; then
             echo "Download Taskfile for Windows"
             curl -L -o taskfile.zip https://github.com/go-task/task/releases/download/v3.31.0/task_windows_amd64.zip
-            tar -xvf taskfile.zip
+            unzip -q taskfile.zip -d .
             ls -la
             set PATH=%PATH%;%cd%
           elif [ "$RUNNER_OS" == "Linux" ]; then
