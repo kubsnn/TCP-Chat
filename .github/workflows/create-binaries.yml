@@ -80,6 +80,7 @@ jobs:
           else
             chmod -R +x task
             sudo mv task/* /usr/local/bin/
+          fi
         shell: bash
 
       - name: Check Taskfile
