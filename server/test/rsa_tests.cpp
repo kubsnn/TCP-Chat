@@ -7,9 +7,11 @@ TEST(CryptoTest, RSA_EncryptDecrypt) {
 
     const std::string text = "test";
     char encrypted[Crypto::rsa_size];
+    memset(encrypted, 0, Crypto::rsa_size);
     crypto.encrypt(text.c_str(), text.size(), encrypted);
 
     char decrypted[Crypto::rsa_size];
+    memset(decrypted, 0, Crypto::rsa_size);
     crypto.decrypt(encrypted, Crypto::rsa_size, decrypted);
 
     EXPECT_EQ(std::string(decrypted), text);

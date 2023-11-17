@@ -62,3 +62,4 @@ server/test/Testing/Temporary/LastTest.log
 server/test/Testing/Temporary/CTestCostData.txt
 server/test/account_controller_tests
 server/test/friend_list_tests
+server/test/rsa_tests

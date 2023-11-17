@@ -1,9 +1,52 @@
 # Server Documentation
 ![Build CI](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci.yml/badge.svg)
 ![Tests CI](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci_tests.yml/badge.svg) </br>
-This documentation provides information about the available requests for the TCP Chat server. Each request must be in JSON format.
+
+## Dependencies
+
+Before building and running the project, ensure that the following dependencies are installed on your system:
+
+- **GCC and G++ >= 10:**
+    ```bash
+    sudo apt-get update
+    sudo apt-get install gcc
+    sudo apt-get install g++
+    ```
+
+- **OpenSSL:**
+    ```bash
+    sudo apt-get install libssl-dev
+    ```
+
+- **CMake:**
+    ```bash
+    sudo apt-get install cmake
+    ```
+
+- **Make:**
+    ```bash
+    sudo apt-get install make
+    ```
+
+- **GTest:**
+    ```bash
+    sudo apt-get install libgtest-dev
+    cd /usr/src/gtest
+    sudo cmake CMakeLists.txt
+    sudo make
+    ```
+
+- **SQLite:**
+    ```bash
+    sudo apt-get install sqlite3
+    sudo apt-get install libsqlite3-dev
+    ```
+
+Please ensure all dependencies are installed before proceeding with the build and execution of the project.
+
 
 ## Data Format Requirements
+This documentation provides information about the available requests for the TCP Chat server. Each request must be in JSON format.
 
 ### Encryption
 All data sent to the server must be encrypted using 2048 bit RSA public key that server provides on connection.
