@@ -34,7 +34,7 @@ jobs:
 
       - name: Set up Taskfile
         run: |
-          if ( [ "$RUNNER_OS" == "Windows" ] ); then
+          if ( "$RUNNER_OS" == "Windows" ); then
             echo "Download Taskfile for Windows"
             curl -L -o taskfile.zip https://github.com/go-task/task/releases/download/v3.31.0/task_windows_amd64.zip
             tar -xvf taskfile.zip
