@@ -2,6 +2,7 @@
 #ifndef __LOG_H__
 #define __LOG_H__
 
+#include "core/utils/globals.h"
 #include <iostream>
 #include <string_view>
 #include <chrono>
@@ -10,6 +11,7 @@
 class Logger {
 public:
     class LogEntry;
+    class LogEntryDebug;
     
     inline Logger(const Logger&) = delete;
 
@@ -31,8 +33,8 @@ public:
         return LogEntry(*this, "[fatal] ");
     }
 
-    inline LogEntry debug() {
-        return LogEntry(*this, "[debug] ");
+    inline LogEntryDebug debug() {
+        return LogEntryDebug(*this);
     }
 
 private:
@@ -68,6 +70,37 @@ public:
         }
 
 
+    private:
+        Logger& logger_;
+        std::lock_guard<std::mutex> lock_;
+    };
+
+    class LogEntryDebug {
+    public:
+        inline LogEntryDebug(Logger& logger)
+            : logger_(logger), lock_(logger.mutex_)
+        {
+            if (globals::debug) logger_.os_ << "[debug] ";
+        }
+
+        inline LogEntryDebug(const LogEntryDebug&) = delete;
+
+        inline LogEntryDebug& operator=(const LogEntryDebug&) = delete;
+
+        inline ~LogEntryDebug() {
+            if (globals::debug) logger_.os_ << std::endl;
+        }
+
+        template <typename T>
+        inline LogEntryDebug& operator<<(const T& value) {
+            if (globals::debug) logger_.os_ << value;
+            return *this;
+        }
+
+        inline LogEntryDebug& operator<<(std::ostream&(*fn)(std::ostream&)) {
+            if (globals::debug) logger_.os_ << fn;
+            return *this;
+        }
     private:
         Logger& logger_;
         std::lock_guard<std::mutex> lock_;

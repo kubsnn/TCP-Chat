@@ -11,7 +11,7 @@ void configure_databases();
 
 class UserDbHandle {
 public:
-    inline static const auto database_path = executable_dir / "users.db";
+    inline static const auto database_path = globals::executable_dir / "users.db";
 
     UserDbHandle();
     UserDbHandle(const UserDbHandle&) = delete;
