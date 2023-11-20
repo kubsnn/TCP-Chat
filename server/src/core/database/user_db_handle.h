@@ -11,7 +11,7 @@ void configure_databases();
 
 class UserDbHandle {
 public:
-    inline static const auto database_path = executable_dir / "users.db";
+    inline static const auto database_path = globals::executable_dir / "users.db";
 
     UserDbHandle();
     UserDbHandle(const UserDbHandle&) = delete;
@@ -25,6 +25,7 @@ public:
     const User getById(int id) const;
     const User getById(int id, bool include_friends) const;
     const User getByName(const std::string& username) const;
+    std::vector<User> getByNameLike(const std::string& username) const;
     const User getByName(const std::string& username, bool include_friends) const;
     bool verify(const User& credentials) const;
 

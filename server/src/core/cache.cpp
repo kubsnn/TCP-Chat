@@ -4,7 +4,7 @@
 
 bool Cache::isUserOnline(const std::string& username) {
     std::shared_lock<std::shared_mutex> lock(users_online_mutex_);
-    return users_online_.contains(username);
+    return users_online_.find(username) != users_online_.end();
 }
 
 void Cache::addUserOnline(Client client) {
@@ -19,7 +19,7 @@ void Cache::removeUserOnline(const std::string& username) {
 
 Client Cache::getUser(const std::string& username) {
     std::shared_lock<std::shared_mutex> lock(users_online_mutex_);
-    if (users_online_.contains(username)) {
+    if (users_online_.find(username) != users_online_.end()) {
         return users_online_.at(username);
     }
     return Client(-1, sockaddr_in{});

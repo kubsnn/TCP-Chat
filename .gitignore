@@ -47,6 +47,7 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 *.cmake
+_deps/
 
 # Ignore compiled files
 *.o

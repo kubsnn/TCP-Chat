@@ -104,6 +104,26 @@ const User UserDbHandle::getByName(const std::string& username) const {
     return getByName(username, false);
 }
 
+std::vector<User> UserDbHandle::getByNameLike(const std::string& username) const {
+    static constexpr auto query = "SELECT ID, USERNAME FROM USERS WHERE USERNAME LIKE ?;";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error("cannot run query; getByNameLike");
+    }
+    sqlite3_bind_text(stmt, 1, (username + "%").c_str(), -1, SQLITE_STATIC);
+
+    std::vector<User> users;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        auto id = sqlite3_column_int(stmt, 0);
+        auto username = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+        users.emplace_back(std::move(username), "", id);
+    }
+
+    sqlite3_finalize(stmt);
+
+    return users;
+}
+
 const User UserDbHandle::getByName(const std::string& username, bool include_friends) const {
     static constexpr auto query = "SELECT ID, USERNAME, PASSWORDHASH FROM USERS WHERE USERNAME = ?;";
     sqlite3_stmt* stmt;

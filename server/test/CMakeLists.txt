@@ -20,8 +20,25 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
 # include the GTest headers
 include_directories(${GTEST_INCLUDE_DIRS})
 
-# include directories
+include(FetchContent)
 
+FetchContent_Declare(
+  consolecolors
+  GIT_REPOSITORY https://github.com/kubsnn/ConsoleColors.git
+)
+
+FetchContent_MakeAvailable(consolecolors)
+
+# Get the source directory of the fetched content
+FetchContent_GetProperties(consolecolors)
+if(NOT consolecolors_POPULATED)
+  FetchContent_Populate(consolecolors)
+endif()
+
+# Add the include directory from the fetched content
+include_directories(${consolecolors_SOURCE_DIR}/include)
+
+# include directories
 include_directories(${PROJECT_SOURCE_DIR}/../src)
 include_directories(${PROJECT_SOURCE_DIR}/../src/include)
 include_directories(${PROJECT_SOURCE_DIR}/../src/core)

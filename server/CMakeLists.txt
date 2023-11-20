@@ -3,12 +3,30 @@ cmake_minimum_required(VERSION 3.10)
 project(tcp_server)
 
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # set the output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
+
+include(FetchContent)
+
+FetchContent_Declare(
+  consolecolors
+  GIT_REPOSITORY https://github.com/kubsnn/ConsoleColors.git
+)
+
+FetchContent_MakeAvailable(consolecolors)
+
+# Get the source directory of the fetched content
+FetchContent_GetProperties(consolecolors)
+if(NOT consolecolors_POPULATED)
+  FetchContent_Populate(consolecolors)
+endif()
+
+# Add the include directory from the fetched content
+include_directories(${consolecolors_SOURCE_DIR}/include)
 
 # include directories
 include_directories(${PROJECT_SOURCE_DIR}/src)

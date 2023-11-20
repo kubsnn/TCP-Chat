@@ -13,7 +13,6 @@
 #include <thread>
 #include <jaszyk/json.hpp>
 #include "core/socket.h"
-#include "logger.h"
 #include <csignal>
 #include "core/utils/globals.h"
 #include "core/utils/crypto.h"
@@ -140,6 +139,13 @@ public:
                 socket_.write(data.to_string(), server_crypto_);
                 msg = "";
             }
+            if (msg == "search") {
+                data["action"] = "search";
+                std::cin >> msg;
+                data["who"] = msg;
+                socket_.write(data.to_string(), server_crypto_);
+                msg = "";
+            }
         }
 
         socket_.close();
@@ -175,7 +181,7 @@ int main(int argc, char* argv[]) {
         const char* ip = argv[1];
         int port = atoi(argv[2]);
         
-        logger.info() << "starting on " << ip << ':' << port << std::endl;
+        std::cout << "starting on " << ip << ':' << port << std::endl;
         Client(ip, port).run();
     }
 }

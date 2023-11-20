@@ -14,6 +14,10 @@ Controller::Controller(Client& client, Cache& cache)
         if (!verifyUsersOnlineRequest(data)) return fail("invalid request format");
         return this->usersOnline(data);
     });
+    addMethod("search", [this](const json& data) {
+        if (!verifySearchRequest(data)) return fail("invalid request format");
+        return this->search(data);
+    });
     addMethod("invite", [this](const json& data) {
         if (!verifyAddFriendRequest(data)) return fail("invalid request format");
         return this->addFriend(data);
@@ -66,6 +70,24 @@ json Controller::usersOnline(const json& data) const {
     for (const auto& user : users) {
         response.push_back(user.username());
     } 
+
+    return ok(std::move(response));
+}
+
+json Controller::search(const json& data) const {
+    const auto& username = data["who"].get<std::string>();
+
+    UserDbHandle db;
+    auto users = db.getByNameLike(username);
+
+    json::array response;
+    response.reserve(users.size());
+    for (const auto& user : users) {
+        json user_json = json::dictionary();
+        user_json["username"] = user.username();
+        user_json["online"] = cache_.isUserOnline(user.username());
+        response.push_back(std::move(user_json));
+    }
 
     return ok(std::move(response));
 }
@@ -154,6 +176,13 @@ bool Controller::verifySendToRequest(const json& j) const {
 }
 
 bool Controller::verifyUsersOnlineRequest(const json& j) const {
+    return true;
+}
+
+bool Controller::verifySearchRequest(const json& j) const {
+    const auto& data = j.get<json::dictionary>();
+    if (!data.contains("who")) return false;
+    if (!data["who"].is<std::string>()) return false;
     return true;
 }
 
