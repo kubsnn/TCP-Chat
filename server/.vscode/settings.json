@@ -64,7 +64,10 @@
         "stop_token": "cpp",
         "streambuf": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "any": "cpp",
+        "map": "cpp",
+        "set": "cpp"
     },
     "cmake.configureOnOpen": false,
     "editor.fontLigatures": false,
