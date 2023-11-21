@@ -12,9 +12,9 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.backends import default_backend
 
-from typing import Callable
+from typing import Callable, Any
 
-def resolve_to_ip(host):
+def resolve_to_ip(host) -> str:
     try:
         # Check if the provided input is already an IP address
         ipaddress.ip_address(host)
@@ -22,14 +22,12 @@ def resolve_to_ip(host):
     except ValueError:
         try:
             # It's not an IP address, so resolve it to an IP
-            ip = socket.gethostbyname(host)
-            return ip
+            return socket.gethostbyname(host)
         except socket.gaierror:
             return None  # Unable to resolve the hostname
 
 class Client:
     def __init__(self, host: str, port: int):
-        print(host, port)
         """
         Initializes a new instance of the Client class.
 
@@ -37,11 +35,12 @@ class Client:
             host (str): The hostname or IP address of the server.
             port (int): The port number to connect to.
         """
-        self.host = host
+        self.host = resolve_to_ip(host)
         self.port = port
         self.socket = None
         self.private_key, self.public_key = self.__load_or_generate_keys()
         self.server_public_key = None
+        self.stop_listener = False
 
     def connect(self) -> bool:
         """
@@ -57,19 +56,30 @@ class Client:
         Sets the listener callback function to handle received data.
 
         Args:
-            callback (callable): The callback function to handle received data.
+            callback (callable(dict)): The callback function to handle received data.
         """
         def listener():
-            while True:
+            print("Listening...")
+            while not self.stop_listener:
                 data = self.__receive()
                 if data is None: # connection closed
-                    print("Listener thread closed!")
                     break
-
                 callback(data)
+            print("Listener thread closed!")
 
-        listener_thread = threading.Thread(target=listener)
-        listener_thread.start()
+        self.listener_thread = threading.Thread(target=listener)
+        #self.listener_thread.daemon = True
+        self.listener_thread.start()
+
+    def exit(self):
+        if self.socket is None:
+            return
+        
+        self.socket.close() 
+        print("Closing connection...")
+        self.stop_listener = True
+        self.listener_thread.join(0)
+        
 
     def send(self, data: str) -> bool:
         """
@@ -102,8 +112,7 @@ class Client:
         """
         return repr(string.encode('utf-8')[1:].decode('unicode_escape'))[1:-1]
 
-    # PRIVATE METHODS:
-
+# private:
     def __initialize_connection(self, host: str, port: int) -> bool:
         """
         Initializes the connection to the server.
@@ -181,7 +190,7 @@ class Client:
 
         return True
 
-    def __receive(self) -> dict:
+    def __receive(self) -> dict[str, Any]:
         """
         Receives and decrypts data from the server.
 
@@ -204,11 +213,9 @@ class Client:
             decrypted_chunk = self.private_key.decrypt(chunk, padding.PKCS1v15())
             data += decrypted_chunk
 
-        print(data.decode('utf-8').rstrip('\0'))
-
         return json.loads(data.decode('utf-8').rstrip('\0'))
 
-    def __receive_raw(self) -> dict:
+    def __receive_raw(self) -> dict[str, Any]:
         """
         Receives raw data from the server.
 

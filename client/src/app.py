@@ -1,6 +1,6 @@
 import eel
 import os
-import tcp
+from api import API
 import threading
 from env import get_host_addr, get_port_no
 
@@ -9,7 +9,10 @@ from env import get_host_addr, get_port_no
 SERVER_ADDR = get_host_addr()
 PORT_NO = get_port_no()
 
-client = tcp.Client(None, None)
+def listener(response):
+    print("Received data: " + json.dumps(response))
+
+api = API(SERVER_ADDR, PORT_NO, listener)
 
 import sys
 import json
@@ -20,26 +23,24 @@ def close_python(*args):
 
 @eel.expose
 def send_data(data):
-    global client
+    global api
+    data = json.loads(data)
     print(data)
-    client.send(data)
+
+    if data["action"] == "register":
+        response = api.register(data["creds"]["username"], data["creds"]["password"])
+        print(response)
+        return response
 
 @eel.expose
 def connect_to_server():
-    global client
-    client = tcp.Client(tcp.resolve_to_ip(SERVER_ADDR), PORT_NO)
-    if not client.connect():
+    global api
+    if not api.connect():
         print("Unable to connect to server!")
         eel.show_toast("danger", "Unable to connect to server!", 2000) # type: ignore
         return False
     
     eel.show_toast("success", "Connected to server!", 2000) # type: ignore
-
-    def listener(response):
-        print("Received data: " + json.dumps(response))
-
-    client.set_listener(listener)
-
     return True
 
 @eel.expose
@@ -59,7 +60,7 @@ def initProjectPath():
     os.chdir(project_directory)
 
 def startApp():
-    global client
+    global api
     initProjectPath()
 
 
@@ -75,8 +76,8 @@ def startApp():
 
         print("Exiting...")
 
-        if client is not None:
-            client.close()
+        if api is not None:
+            api.close()
 
 
         #Handle errors and the potential hanging python.exe process
