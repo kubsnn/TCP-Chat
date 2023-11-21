@@ -238,14 +238,16 @@ class API:
 
     def __handleResponse(self, data): 
         if "action" in data:
+            if data["action"] == "received":
+                data["from"] = self.__decode_utf8(data["from"])
+                data["to"] = self.__decode_utf8(data["to"])
+                self.onMessage(data)
+                return
+
             with self.lock.gen_wlock():
                 self.responses[data["action"]] = data
         else:
-            if data is not None and "type" in data and data["type"] == "message":
-                data["from"] = self.__decode_utf8(data["from"])
-                data["to"] = self.__decode_utf8(data["to"])
-
-                self.onMessage(data)
+            print("Unknown response: ", data)
     
     def __encode_utf8(self, string: str) -> str:
         return string.encode('unicode-escape').decode('utf-8')
