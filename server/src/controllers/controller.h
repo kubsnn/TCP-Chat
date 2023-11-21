@@ -5,7 +5,7 @@
 #include <core/icontroller.h>
 #include <core/client.h>
 #include <core/cache.h>
-#include <jaszyk/json.hpp>
+#include <json.hpp>
 
 class Controller : public IController {
 public:

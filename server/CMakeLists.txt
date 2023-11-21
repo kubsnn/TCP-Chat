@@ -28,6 +28,22 @@ endif()
 # Add the include directory from the fetched content
 include_directories(${consolecolors_SOURCE_DIR}/include)
 
+FetchContent_Declare(
+  json
+  GIT_REPOSITORY https://github.com/kubsnn/json.git
+)
+
+FetchContent_MakeAvailable(json)
+
+# Get the source directory of the fetched content
+FetchContent_GetProperties(json)
+if(NOT json_POPULATED)
+  FetchContent_Populate(json)
+endif()
+
+# Add the include directory from the fetched content
+include_directories(${json_SOURCE_DIR}/include)
+
 # include directories
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src/include)

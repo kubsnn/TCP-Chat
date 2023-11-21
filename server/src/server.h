@@ -7,7 +7,6 @@
 #include "core/socket.h"
 #include "core/cache.h"
 
-#include <jaszyk/json.hpp>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
