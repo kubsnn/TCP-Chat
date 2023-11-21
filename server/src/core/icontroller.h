@@ -2,7 +2,7 @@
 #ifndef __I_CONTROLLER_H__
 #define __I_CONTROLLER_H__
 
-#include <jaszyk/json.hpp>
+#include <json.hpp>
 #include <functional>
 #include <string>
 

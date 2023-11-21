@@ -5,7 +5,6 @@
 Controller::Controller(Client& client, Cache& cache)
     : client_(client), cache_(cache)
 { 
-
     addMethod("sendto", [this](const json& data) {
         if (!verifySendToRequest(data)) return fail("invalid request format");
         return this->sendTo(data);
@@ -36,7 +35,7 @@ Controller::Controller(Client& client, Cache& cache)
     });
 }
 
-json Controller::invoke(const std::string &method, const json &data) const {
+json Controller::invoke(const std::string& method, const json& data) const {
     if (!client_.logged()) {
         return fail("you are not logged in");
     }
@@ -51,11 +50,13 @@ json Controller::sendTo(const json& data) const {
         return fail("user is offline");
     }
 
-    json message = json::dictionary();
-    message["from"] = client_.username();
-    message["to"] = receiver_name;
-    message["message"] = data["message"].get<std::string>();
-    message["type"] = "message";
+    json message = {
+        { "from", client_.username() },
+        { "to", receiver_name },
+        { "message", data["message"].get<std::string>() },
+        { "type", "message" },
+        { "action", "received" }
+    };
 
     auto user = cache_.getUser(receiver_name);
     user.writeEncrypted(message.to_string());
@@ -83,10 +84,11 @@ json Controller::search(const json& data) const {
     json::array response;
     response.reserve(users.size());
     for (const auto& user : users) {
-        json user_json = json::dictionary();
-        user_json["username"] = user.username();
-        user_json["online"] = cache_.isUserOnline(user.username());
-        response.push_back(std::move(user_json));
+        json user_dto = {
+            { "username", user.username() },
+            { "online", cache_.isUserOnline(user.username()) }
+        };
+        response.push_back(std::move(user_dto));
     }
 
     return ok(std::move(response));
@@ -125,10 +127,11 @@ json Controller::getFriends(const json& data) const {
     response.reserve(user.friends().size());
     
     for (const auto& f : user.friends()) {
-        json friend_json = json::dictionary();
-        friend_json["username"] = f.username();
-        friend_json["online"] = cache_.isUserOnline(f.username());
-        response.push_back(std::move(friend_json));
+        json json_dto = {
+            { "username", f.username() },
+            { "online", cache_.isUserOnline(f.username()) }
+        };
+        response.push_back(std::move(json_dto));
     }
 
     return ok(std::move(response));
@@ -158,9 +161,10 @@ json Controller::getInvitations(const json& data) const {
     json::array response;
     response.reserve(invitations.size());
     for (const auto& inv : invitations) {
-        json invitation = json::dictionary();
-        invitation["username"] = inv.username();
-        response.push_back(std::move(invitation));
+        json invite_dto = {
+            { "username", inv.username() }
+        };
+        response.push_back(std::move(invite_dto));
     }
 
     return ok(std::move(response));
