@@ -229,6 +229,25 @@ std::string Crypto::sha256(const char* data, int len) {
     return hash;
 }
 
+std::string Crypto::salt() {
+    std::string s(14, '\0');
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 61);
+    for (int i = 0; i < 14; ++i) {
+        int r = dis(gen);
+        if (r < 26) {
+            s[i] = 'a' + r;
+        } else if (r < 52) {
+            s[i] = 'A' + r - 26;
+        } else {
+            s[i] = '0' + r - 52;
+        }
+    }
+    return s;
+}
+
+
 int Crypto::random(int min, int max) {
     std::random_device rd;
     std::mt19937 gen(rd());

@@ -42,7 +42,7 @@ public:
     static bool verifyKey(const std::string& key);
     static std::string sha256(const std::string& data);
     static std::string sha256(const char* data, int len);
-
+    static std::string salt();
     static int random(int min, int max); // [min, max]
 };
 

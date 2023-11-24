@@ -29,8 +29,10 @@ json AccountController::signup(const json& data) const {
     if (db.exists(username)) {
         return fail("username is taken");
     }
-
-    if (!db.add({ username, hash(password) })) {
+    auto salt = Crypto::salt();
+    auto hashed = hash({ username, password, salt });
+    User user(username, std::move(hashed), std::move(salt));
+    if (!db.add(user)) {
         return fatal();
     }
 
@@ -49,7 +51,7 @@ json AccountController::signin(const json& data) const {
     }
 
     auto user = db.getByName(username);
-    if (user.passwordHash() != hash(password)) {
+    if (user.passwordHash() != hash({ username, password, user.salt() })) {
         return fail("invalid password");
     }
 
