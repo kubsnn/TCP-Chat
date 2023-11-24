@@ -21,7 +21,7 @@ void IController::addMethod(std::string name, std::function<json(const json &)> 
 }
 
 std::string IController::hash(const User& user) const {
-    return Crypto::sha256(user.passwordHash() + user.salt());
+    return Crypto::base64Encode(Crypto::sha256(user.passwordHash() + user.salt()));
 }
 
 json IController::ok(json&& result) const {

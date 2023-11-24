@@ -43,6 +43,8 @@ public:
     static std::string sha256(const std::string& data);
     static std::string sha256(const char* data, int len);
     static std::string salt();
+    static std::string base64Encode(const std::string& data);
+    static std::string base64Decode(const std::string& data);
     static int random(int min, int max); // [min, max]
 };
 

@@ -68,7 +68,10 @@
         "variant": "cpp",
         "any": "cpp",
         "map": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "forward_list": "cpp",
+        "ranges": "cpp",
+        "valarray": "cpp"
     },
     "python.analysis.autoImportCompletions": true,
     "python.analysis.typeCheckingMode": "basic",

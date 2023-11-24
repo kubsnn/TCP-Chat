@@ -247,6 +247,41 @@ std::string Crypto::salt() {
     return s;
 }
 
+std::string Crypto::base64Encode(const std::string& data) {
+    BIO* bmem = nullptr;
+    BIO* b64 = nullptr;
+    BUF_MEM* bptr = nullptr;
+
+    b64 = BIO_new(BIO_f_base64());
+    bmem = BIO_new(BIO_s_mem());
+    b64 = BIO_push(b64, bmem);
+    BIO_write(b64, data.c_str(), data.size());
+    BIO_flush(b64);
+    BIO_get_mem_ptr(b64, &bptr);
+
+    std::string result(bptr->data, bptr->length - 1);
+    BIO_free_all(b64);
+
+    return result;    
+}
+
+std::string Crypto::base64Decode(const std::string& data) {
+    BIO* b64 = nullptr;
+    BIO* bmem = nullptr;
+    char* buffer = new char[data.size()];
+    memset(buffer, 0, data.size());
+
+    b64 = BIO_new(BIO_f_base64());
+    bmem = BIO_new_mem_buf(data.c_str(), data.size());
+    bmem = BIO_push(b64, bmem);
+    BIO_read(bmem, buffer, data.size());
+
+    std::string result(buffer, data.size());
+    BIO_free_all(bmem);
+    delete[] buffer;
+
+    return result;
+}
 
 int Crypto::random(int min, int max) {
     std::random_device rd;
