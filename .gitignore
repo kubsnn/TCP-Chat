@@ -68,3 +68,4 @@ client/src/private_key.pem
 client/src/public_key.pem
 private_key.pem
 public_key.pem
+*.test

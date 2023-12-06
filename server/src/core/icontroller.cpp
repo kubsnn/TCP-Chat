@@ -20,12 +20,8 @@ void IController::addMethod(std::string name, std::function<json(const json &)> 
     methods_.insert(std::move(name), std::move(method));
 }
 
-std::string IController::hash(const std::string& data) const {
-    char salted[128] = "^H3lloW0rld!@#";
-    std::fill(std::begin(salted) + 14, std::end(salted), '\0');
-    std::copy(data.begin(), data.end(), std::begin(salted) + 14);
-    std::this_thread::sleep_for(std::chrono::milliseconds(Crypto::random(1, 10)));    
-    return Crypto::sha256(salted, data.size() + 14);
+std::string IController::hash(const User& user) const {
+    return Crypto::base64Encode(Crypto::sha256(user.passwordHash() + user.salt()));
 }
 
 json IController::ok(json&& result) const {

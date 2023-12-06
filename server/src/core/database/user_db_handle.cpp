@@ -1,4 +1,5 @@
 #include "user_db_handle.h"
+#include "../utils/crypto.h"
 #include <stdexcept>
 
 UserDbHandle::UserDbHandle()
@@ -32,7 +33,7 @@ UserDbHandle& UserDbHandle::operator=(UserDbHandle&& other) noexcept {
 }
 
 bool UserDbHandle::add(const User& user) const {
-    static constexpr auto query = "INSERT INTO USERS (USERNAME, PASSWORDHASH) VALUES (?, ?);";
+    static constexpr auto query = "INSERT INTO users (username, passwordhash, salt) VALUES (?, ?, ?);";
 
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -41,6 +42,7 @@ bool UserDbHandle::add(const User& user) const {
 
     sqlite3_bind_text(stmt, 1, user.username().c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, user.passwordHash().c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, user.salt().c_str(), -1, SQLITE_STATIC);
 
     int rc = sqlite3_step(stmt);
 
@@ -53,7 +55,7 @@ bool UserDbHandle::add(const User& user) const {
 }
 
 bool UserDbHandle::exists(const std::string& username) const {
-    static constexpr auto query = "SELECT COUNT(*) FROM USERS WHERE USERNAME = ?;";
+    static constexpr auto query = "SELECT COUNT(*) FROM users WHERE username = ?;";
     sqlite3_stmt* stmt;
 
     if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -77,7 +79,7 @@ const User UserDbHandle::getById(int id) const {
 }
 
 const User UserDbHandle::getById(int id, bool include_friends) const {
-    static constexpr auto query = "SELECT ID, USERNAME, PASSWORDHASH FROM USERS WHERE ID = ?;";
+    static constexpr auto query = "SELECT id, username, passwordhash, salt FROM users WHERE id = ?;";
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot run query; getById");
@@ -88,16 +90,17 @@ const User UserDbHandle::getById(int id, bool include_friends) const {
         id = sqlite3_column_int(stmt, 0);
         auto username = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
         auto password_hash = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+        auto salt = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
 
         sqlite3_finalize(stmt);
         if (!include_friends) {
-            return User(std::move(username), std::move(password_hash), id);
+            return User(std::move(username), std::move(password_hash), std::move(salt), id);
         }
-        return User(std::move(username), std::move(password_hash), id, getFriends(id));
+        return User(std::move(username), std::move(password_hash), std::move(salt), id, getFriends(id));
     }
 
     sqlite3_finalize(stmt);
-    return User("", "", -1);
+    return User("", "", "", -1);
 }
 
 const User UserDbHandle::getByName(const std::string& username) const {
@@ -105,7 +108,7 @@ const User UserDbHandle::getByName(const std::string& username) const {
 }
 
 std::vector<User> UserDbHandle::getByNameLike(const std::string& username) const {
-    static constexpr auto query = "SELECT ID, USERNAME FROM USERS WHERE USERNAME LIKE ?;";
+    static constexpr auto query = "SELECT id, username FROM users WHERE username LIKE ?;";
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot run query; getByNameLike");
@@ -116,7 +119,7 @@ std::vector<User> UserDbHandle::getByNameLike(const std::string& username) const
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         auto id = sqlite3_column_int(stmt, 0);
         auto username = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-        users.emplace_back(std::move(username), "", id);
+        users.emplace_back(std::move(username), "", "", id);
     }
 
     sqlite3_finalize(stmt);
@@ -125,7 +128,7 @@ std::vector<User> UserDbHandle::getByNameLike(const std::string& username) const
 }
 
 const User UserDbHandle::getByName(const std::string& username, bool include_friends) const {
-    static constexpr auto query = "SELECT ID, USERNAME, PASSWORDHASH FROM USERS WHERE USERNAME = ?;";
+    static constexpr auto query = "SELECT id, username, passwordhash, salt FROM users WHERE username = ?;";
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr);
 
@@ -141,17 +144,19 @@ const User UserDbHandle::getByName(const std::string& username, bool include_fri
         auto id = sqlite3_column_int(stmt, 0);
         auto username = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
         auto password_hash = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+        auto salt = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+
         sqlite3_finalize(stmt);
         if (!include_friends) {
-            return User(std::move(username), std::move(password_hash), id);
+            return User(std::move(username), std::move(password_hash), std::move(salt), id);
         }
-        return User(std::move(username), std::move(password_hash), id, getFriends(id));
+        return User(std::move(username), std::move(password_hash), std::move(salt), id, getFriends(id));
     }
 
     sqlite3_finalize(stmt);
     throw std::runtime_error("user does not exist");
 
-    return {"", "", -1};
+    return {"", "", "", -1};
 }
 
 bool UserDbHandle::verify(const User& credentials) const
@@ -160,7 +165,7 @@ bool UserDbHandle::verify(const User& credentials) const
 }
 
 bool UserDbHandle::addFriend(int who_id, const std::string& friend_name) const {
-    static constexpr auto query = "INSERT INTO FRIENDS (user_id, friend_id, status) VALUES (?, ?, 0);";
+    static constexpr auto query = "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 0);";
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot prepare insert new friend query");
@@ -185,7 +190,7 @@ bool UserDbHandle::acceptInvitation(int id, const std::string& friend_name) cons
         return false;
     }
     
-    static constexpr auto query = "UPDATE FRIENDS SET status = 1 WHERE user_id = ? AND friend_id = ?;";
+    static constexpr auto query = "UPDATE friends SET status = 1 WHERE user_id = ? AND friend_id = ?;";
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot prepare accept invitation query");
@@ -207,7 +212,7 @@ bool UserDbHandle::acceptInvitation(int id, const std::string& friend_name) cons
 }
 
 std::vector<User> UserDbHandle::getFriends(int id) const {
-    static constexpr auto query = "SELECT friend_id, username FROM FRIENDS JOIN USERS ON friend_id = ID WHERE user_id = ? AND status = 1;";
+    static constexpr auto query = "SELECT friend_id, username FROM friends JOIN users ON friend_id = id WHERE user_id = ? AND status = 1;";
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot prepare get friends query");
@@ -219,7 +224,7 @@ std::vector<User> UserDbHandle::getFriends(int id) const {
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         auto friend_id = sqlite3_column_int(stmt, 0);
         auto friend_name = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-        friends.emplace_back(friend_name, "", friend_id);
+        friends.emplace_back(friend_name, "", "", friend_id);
     }
 
     sqlite3_finalize(stmt);
@@ -228,7 +233,7 @@ std::vector<User> UserDbHandle::getFriends(int id) const {
 }
 
 std::vector<User> UserDbHandle::getInvitations(int id) const {
-    static constexpr auto query = "SELECT user_id, username FROM FRIENDS JOIN USERS ON user_id = ID WHERE friend_id = ? AND status = 0;";
+    static constexpr auto query = "SELECT user_id, username FROM friends JOIN users ON user_id = id WHERE friend_id = ? AND status = 0;";
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot prepare get invitations query");
@@ -240,7 +245,7 @@ std::vector<User> UserDbHandle::getInvitations(int id) const {
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         auto user_id = sqlite3_column_int(stmt, 0);
         auto username = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-        invitations.emplace_back(username, "", user_id);
+        invitations.emplace_back(username, "", "", user_id);
     }
 
     sqlite3_finalize(stmt);
@@ -249,19 +254,19 @@ std::vector<User> UserDbHandle::getInvitations(int id) const {
 }
 
 void UserDbHandle::drop() const {
-    static constexpr auto drop_users_table_query = "DROP TABLE IF EXISTS USERS;";
+    static constexpr auto drop_users_table_query = "DROP TABLE IF EXISTS users;";
     if (sqlite3_exec(db_, drop_users_table_query, nullptr, nullptr, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot drop users table");
     }
 
-    static constexpr auto drop_friends_table_query = "DROP TABLE IF EXISTS FRIENDS;";
+    static constexpr auto drop_friends_table_query = "DROP TABLE IF EXISTS friends;";
     if (sqlite3_exec(db_, drop_friends_table_query, nullptr, nullptr, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot drop friends table");
     }
 }
 
 bool UserDbHandle::isInvitedBy(int id, int friend_id) const {
-    static constexpr auto query = "SELECT COUNT(*) FROM FRIENDS WHERE user_id = ? AND friend_id = ? AND status = 0;";
+    static constexpr auto query = "SELECT COUNT(*) FROM friends WHERE user_id = ? AND friend_id = ? AND status = 0;";
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot prepare is invited by query");
@@ -283,7 +288,7 @@ bool UserDbHandle::isInvitedBy(int id, int friend_id) const {
 }
 
 void UserDbHandle::addFriendForce(int id, int friend_id) const {
-    static constexpr auto query = "INSERT INTO FRIENDS (user_id, friend_id, status) VALUES (?, ?, 1);";
+    static constexpr auto query = "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 1);";
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot prepare insert new friend query");
@@ -302,21 +307,22 @@ void UserDbHandle::addFriendForce(int id, int friend_id) const {
 }
 
 void UserDbHandle::tryInitializeTables() {
-    static constexpr auto create_users_table_query = "CREATE TABLE IF NOT EXISTS USERS (\
-ID INTEGER PRIMARY KEY AUTOINCREMENT,\
-USERNAME TEXT UNIQUE NOT NULL,\
-PASSWORDHASH TEXT NOT NULL);";
+    static constexpr auto create_users_table_query = "CREATE TABLE IF NOT EXISTS users (\
+id INTEGER PRIMARY KEY AUTOINCREMENT,\
+username TEXT UNIQUE NOT NULL,\
+passwordhash TEXT NOT NULL,\
+salt TEXT NOT NULL);";
 
     if (sqlite3_exec(db_, create_users_table_query, nullptr, nullptr, nullptr) != SQLITE_OK) {
         throw std::runtime_error("cannot create table");
     }
 
-    static constexpr auto create_friends_table_query = "CREATE TABLE IF NOT EXISTS FRIENDS (\
+    static constexpr auto create_friends_table_query = "CREATE TABLE IF NOT EXISTS friends (\
 user_id INTEGER NOT NULL,\
 friend_id INTEGER NOT NULL,\
 status INTEGER NOT NULL,\
-FOREIGN KEY(user_id) REFERENCES USERS(ID),\
-FOREIGN KEY(friend_id) REFERENCES USERS(ID),\
+FOREIGN KEY(user_id) REFERENCES users(id),\
+FOREIGN KEY(friend_id) REFERENCES users(id),\
 UNIQUE(user_id, friend_id));";
 
     if (sqlite3_exec(db_, create_friends_table_query, nullptr, nullptr, nullptr) != SQLITE_OK) {

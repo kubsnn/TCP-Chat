@@ -3,7 +3,7 @@ name: tests
 on: [push, pull_request]
 
 jobs:
-  run:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,21 +31,61 @@ jobs:
             cmake .
             make
 
-    - name: Account tests
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v2
+      with:
+          name: test_artifacts
+          path: server/test/*.test
+  
+  account_controller_tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Download test artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: test_artifacts
+        path: server/test
+
+    - name: Run account_controller_tests
       run: |
-            cd server/test
-            ./account_controller_tests
+        cd server/test
+        chmod +x account_controller_tests.test
+        ./account_controller_tests.test
 
-    - name: Friendlist tests
+  friend_list_tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download test artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: test_artifacts
+        path: server/test
+
+
+    - name: Run friend_list_tests
       run: |
-            cd server/test
-            ./friend_list_tests
+        pwd
+        cd server/test
+        chmod +x friend_list_tests.test
+        ./friend_list_tests.test
 
-    - name: RSA tests
+  rsa_tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download test artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: test_artifacts
+        path: server/test
+
+    - name: Run rsa_tests
       run: |
-            cd server/test
-            ./rsa_tests
-        
-
-
-    
+        cd server/test
+        chmod +x rsa_tests.test
+        ./rsa_tests.test
