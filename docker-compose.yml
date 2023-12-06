@@ -4,4 +4,6 @@ services:
   chat-server:
     build:
       context: ./server
-    network_mode: "host"
+    network_mode: "bridge"
+    ports:
+      - "42069:42069"

@@ -34,6 +34,9 @@ server/src/server
 server/src/client
 server/bin/server
 server/server
+
+client/build/
+client/dist
 server/log.txt
 server/src/server
 
@@ -44,6 +47,7 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 *.cmake
+_deps/
 
 # Ignore compiled files
 *.o
@@ -60,3 +64,6 @@ server/test/Testing/Temporary/CTestCostData.txt
 server/test/account_controller_tests
 server/test/friend_list_tests
 server/test/rsa_tests
+client/src/private_key.pem
+client/src/public_key.pem
+*.test

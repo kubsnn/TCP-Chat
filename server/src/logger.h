@@ -2,6 +2,8 @@
 #ifndef __LOG_H__
 #define __LOG_H__
 
+#include <color.hpp>
+#include "core/utils/globals.h"
 #include <iostream>
 #include <string_view>
 #include <chrono>
@@ -10,6 +12,7 @@
 class Logger {
 public:
     class LogEntry;
+    class LogEntryDebug;
     
     inline Logger(const Logger&) = delete;
 
@@ -20,15 +23,19 @@ public:
     { }
 
     inline LogEntry info() {
-        return LogEntry(*this, "[info] ");
+        return LogEntry(*this, "info", cc::darkgreen);
     }
 
     inline LogEntry warning() {
-        return LogEntry(*this, "[warn] ");
+        return LogEntry(*this, "warn", cc::darkyellow);
     }
 
     inline LogEntry error() {
-        return LogEntry(*this, "[fatal] ");
+        return LogEntry(*this, "fatal", cc::red);
+    }
+
+    inline LogEntryDebug debug() {
+        return LogEntryDebug(*this);
     }
 
 private:
@@ -38,10 +45,10 @@ private:
 public:
     class LogEntry {
     public:
-        inline LogEntry(Logger& logger, const std::string& prefix)
+        inline LogEntry(Logger& logger, const std::string& prefix, const jaszyk::ConsoleColor& color)
             : logger_(logger), lock_(logger.mutex_)
         {
-            logger_.os_ << prefix;
+            logger_.os_ << cc::white << '[' << color << prefix << cc::white << "] " << cc::reset;
         }
 
         inline LogEntry(const LogEntry&) = delete;
@@ -58,12 +65,43 @@ public:
             return *this;
         }
 
-        inline LogEntry& operator<<(std::ostream&(*fn)(std::ostream&)) {
+        inline LogEntry& operator<<(std::ostream& (*fn)(std::ostream&)) {
             logger_.os_ << fn;
             return *this;
         }
 
 
+    private:
+        Logger& logger_;
+        std::lock_guard<std::mutex> lock_;
+    };
+
+    class LogEntryDebug {
+    public:
+        inline LogEntryDebug(Logger& logger)
+            : logger_(logger), lock_(logger.mutex_)
+        {
+            if (globals::debug) logger_.os_ << cc::white << '[' << cc::blue << "debug" << cc::white << "] " << cc::reset;
+        }
+
+        inline LogEntryDebug(const LogEntryDebug&) = delete;
+
+        inline LogEntryDebug& operator=(const LogEntryDebug&) = delete;
+
+        inline ~LogEntryDebug() {
+            if (globals::debug) logger_.os_ << std::endl;
+        }
+
+        template <typename T>
+        inline LogEntryDebug& operator<<(const T& value) {
+            if (globals::debug) logger_.os_ << value;
+            return *this;
+        }
+
+        inline LogEntryDebug& operator<<(std::ostream&(*fn)(std::ostream&)) {
+            if (globals::debug) logger_.os_ << fn;
+            return *this;
+        }
     private:
         Logger& logger_;
         std::lock_guard<std::mutex> lock_;

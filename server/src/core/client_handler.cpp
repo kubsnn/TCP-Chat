@@ -27,14 +27,17 @@ void ClientHandler::run() {
     while (true) {
         try {
             json request = receiveRequest();
+            
             if (!isValidRequest(request)) {
                 if (!sendResponse(invalidInputJsonError())) {
                     break;
                 }
                 continue;
             }
-
+            logger.debug() << "Received request: " << request.to_pretty_string(2) << std::endl;
             auto result = execute(request);
+
+            logger.debug() << "Sending response: " << result.to_pretty_string(2) << std::endl;
 
             if (result["result"].get<std::string>() == "fatal") {
                 break;
@@ -45,6 +48,7 @@ void ClientHandler::run() {
             sendResponse(result);
 
         } catch (const std::exception& ex) { // socket closed
+            logger.debug() << "Exception occured: " << ex.what() << std::endl;
             break;
         }
     }

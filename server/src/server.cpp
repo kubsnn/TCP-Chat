@@ -25,7 +25,7 @@ Server::Server(const char* ip, int port)
         exit(signum);
     });
 
-    logger.info() << "Starting in " << executable_dir << '.' << std::endl;
+    logger.info() << "Starting in " << globals::executable_dir << '.' << std::endl;
 }
 
 Server::~Server() { 
@@ -37,6 +37,7 @@ void Server::run() {
     logger.info() << "Building server..." << std::endl;
     buildServer();
     logger.info() << "Application started." << std::endl;
+    logger.debug() << "Debug mode enabled." << std::endl;
     while (true) {
         try {
             auto client = createClient();
@@ -92,7 +93,7 @@ void Server::buildServer() {
 void Server::onInterrupt(int signum) {
     auto clients = cache_.usersOnline();
     for (auto& client : clients) {
-        close(client.socket().fd());
+        client.disconnect();
     }
 
     close(sockfd_);

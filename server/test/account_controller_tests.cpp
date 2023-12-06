@@ -2,7 +2,7 @@
 #include <controllers/account_controller.h>
 #include <core/cache.h>
 #include <core/client.h>
-#include <jaszyk/json.hpp>
+#include <json.hpp>
 #include <core/database/user_db_handle.h>
 
 struct AccountControllerTest : public ::testing::Test {

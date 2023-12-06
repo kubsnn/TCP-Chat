@@ -2,7 +2,8 @@
 #ifndef __I_CONTROLLER_H__
 #define __I_CONTROLLER_H__
 
-#include <jaszyk/json.hpp>
+#include "database/user.h"
+#include <json.hpp>
 #include <functional>
 #include <string>
 
@@ -20,7 +21,7 @@ public:
 protected:
     void addMethod(std::string name, std::function<json(const json&)> method);
 
-    std::string hash(const std::string& data) const;
+    std::string hash(const User& user) const;
 
     json ok(json&& result) const;
     json ok() const;

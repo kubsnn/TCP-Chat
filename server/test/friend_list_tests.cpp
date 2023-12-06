@@ -3,11 +3,14 @@
 #include <controllers/account_controller.h>
 #include <core/cache.h>
 #include <core/client.h>
-#include <jaszyk/json.hpp>
+#include <json.hpp>
 #include <core/database/user_db_handle.h>
+
 
 struct ControllerTest : public ::testing::Test {
     ControllerTest() {
+        UserDbHandle db;
+        db.drop();
         cache = new Cache();
         client1 = new Client(-1, sockaddr_in{});
         client2 = new Client(-1, sockaddr_in{});
@@ -68,6 +71,9 @@ TEST_F(ControllerTest, AddFriend) {
     auto invitations = controller2->invoke("invitations", json::dictionary());
     EXPECT_EQ(invitations["result"].get<std::string>(), "ok");
     EXPECT_EQ(invitations["values"][0]["username"].get<std::string>(), "test1");
+
+    UserDbHandle db;
+    db.drop();
 }
 
 TEST_F(ControllerTest, AddFriendUserNotExists) {
@@ -78,12 +84,18 @@ TEST_F(ControllerTest, AddFriendUserNotExists) {
     }
     )"));
     EXPECT_EQ(result["result"].get<std::string>(), "fail");
+
+    UserDbHandle db;
+    db.drop();
 }
 
 TEST_F(ControllerTest, AddFriendAlreadyInvited) {
     controller1->invoke("invite", add_friend_json);
     auto result = controller1->invoke("invite", add_friend_json);
     EXPECT_EQ(result["result"].get<std::string>(), "fail");
+
+    UserDbHandle db;
+    db.drop();
 }
 
 const json accept_friend_json = json::parse(R"(
@@ -100,6 +112,8 @@ TEST_F(ControllerTest, AddFriendAccept) {
     EXPECT_EQ(friends["result"].get<std::string>(), "ok");
     EXPECT_EQ(friends["values"][0]["username"].get<std::string>(), "test1");
 
+    UserDbHandle db;
+    db.drop();
 }
 
 TEST_F(ControllerTest, AddFriendAlreadyFriends) {
@@ -107,6 +121,9 @@ TEST_F(ControllerTest, AddFriendAlreadyFriends) {
     controller2->invoke("accept", accept_friend_json);
     auto result = controller1->invoke("invite", add_friend_json);
     EXPECT_EQ(result["result"].get<std::string>(), "fail");
+
+    UserDbHandle db;
+    db.drop();
 }
 
 TEST_F(ControllerTest, AddFriendAlreadyInvitedByOther) {
@@ -118,6 +135,9 @@ TEST_F(ControllerTest, AddFriendAlreadyInvitedByOther) {
     }
     )"));
     EXPECT_EQ(result["result"].get<std::string>(), "fail");
+
+    UserDbHandle db;
+    db.drop();
 }
 
 int main(int argc, char* argv[]) {
