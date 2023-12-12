@@ -62,7 +62,8 @@ export default {
 
 <template>
     <fwb-button @click="showModal" color="pink" class="w-full mb-2"> Add Friend </fwb-button>
-    <AddContact :isShowModal="isShowModal" :closeModal="closeModal" :friendsList="contacts" @refresh-friends="getFriends" />
+    <AddContact :isShowModal="isShowModal" :closeModal="closeModal" :friendsList="contacts"
+        @refresh-friends="emits('refresh-friends')" />
 
 
 

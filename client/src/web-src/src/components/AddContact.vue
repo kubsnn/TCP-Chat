@@ -42,14 +42,14 @@ export default {
         handleSearch(response) {
             this.queryResults = response;
         },
-        handleUserClick(user) {
+        async handleUserClick(user) {
             console.log(user);
             console.log(this.friendsList);
 
             if (!this.friendsList.some((friend) => friend.name === user)) {
-                eel.add_friend(user)(this.handleAddFriend);
+                await eel.add_friend(user)(this.$emit('refresh-friends'));
             } else {
-                eel.remove_friend(user)(this.$emit('refresh-friends'));
+                await eel.remove_friend(user)(this.$emit('refresh-friends'));
             }
         }
     },
