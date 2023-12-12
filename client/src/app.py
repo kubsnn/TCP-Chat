@@ -193,8 +193,18 @@ def reject_invite(username):
 
 @eel.expose
 def remove_friend(username):
-    print("Removing friend: " + username)
-    print("Not implemented yet!")
+    try:
+        response = api.remove(username)
+        print(response)
+        if response["result"] == "ok":
+            eel.show_toast("success", "Friend removed!", 2000) # type: ignore
+            return True
+        else:
+            eel.show_toast("danger", response["message"], 2000) # type: ignore
+            return False
+    except Exception as e:
+        print(e)
+        return False
 
 
 

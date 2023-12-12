@@ -94,6 +94,7 @@ export default {
 
         // Your existing refreshFriends method
         refreshFriends() {
+            console.log("Refreshing friends");
             this.getFriends();
             //this.getOnlineUsers();
         },
