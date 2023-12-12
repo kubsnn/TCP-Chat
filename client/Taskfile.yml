@@ -24,11 +24,26 @@ tasks:
 
   install:
     cmds:
-      - cd src/web-src && npm ci && npm install
+      - cd src/web-src && npm i
       - cd src && pip3 install -r requirements.txt
+    sources:
+      - src/web-src/package-lock.json
+      - src/web-src/package.json
+      - src/requirements.txt
+    generates:
+      - src/web-src/node_modules
+      - src/web-src/package-lock.json
+      - src/web-src/package.json
 
   build:
-    deps: ["install", "prerequisities:build"]
+    deps:
+      - task: install
+      - task: prerequisities:build
+    sources:
+      - src/web-src/
+    generates:
+      - src/web
+      - src/web/index.html
 
   clean:
     deps: ["prerequisities:clean"]
@@ -41,7 +56,6 @@ tasks:
 
   .phony:
     - install
-    - build
     - run
     - clean
     - help
