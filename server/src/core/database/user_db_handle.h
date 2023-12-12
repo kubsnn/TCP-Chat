@@ -40,6 +40,7 @@ public:
 private:
     bool isInvitedBy(int id, int friend_id) const;
     void addFriendForce(int id, int friend_id) const;
+    void removeFriendForce(int id, int friend_id) const;
 
     void tryInitializeTables();
 

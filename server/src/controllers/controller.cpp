@@ -134,7 +134,7 @@ json Controller::getFriends(const json& data) const {
 
     json::array response;
     response.reserve(user.friends().size());
-    
+
     for (const auto& f : user.friends()) {
         json json_dto = {
             { "username", f.username() },
@@ -188,9 +188,13 @@ json Controller::removeFriend(const json& data) const {
         return fail("friend to remove doesn't exist");
     }
 
+    if (!db.isFriend(client_.username(), friend_name)) {
+        return fail("you are not friends");
+    }
+
     auto user = db.getByName(client_.username());
     if (!db.removeFriend(user.id(), friend_name)) {
-        return fail("you are not friends");
+        return fatal();
     }
 
     return ok();    
