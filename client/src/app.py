@@ -1,3 +1,4 @@
+import re
 import eel
 import os
 from api import API
@@ -39,17 +40,161 @@ def connect_to_server():
         print("Unable to connect to server!")
         eel.show_toast("danger", "Unable to connect to server!", 2000) # type: ignore
         return False
-    
+
     eel.show_toast("success", "Connected to server!", 2000) # type: ignore
     return True
 
 @eel.expose
-def listen_to_server():
-    return None
+def login_to_server(username, password):
+    global api
+    response = api.login(username, password)
+    print(response)
+    if response["result"] == "ok":
+        eel.show_toast("success", "Logged in successfully!", 2000) # type: ignore
+        return True
+    else:
+        eel.show_toast("danger", response["message"], 2000) # type: ignore
+        return False
 
 @eel.expose
-def receive_from_server():
-    return None
+def register_to_server(username, password):
+    global api
+    response = api.register(username, password)
+    print(response)
+    if response["result"] == "ok":
+        eel.show_toast("success", "Registered successfully!", 2000) # type: ignore
+        response = api.login(username, password)
+        print(response)
+        if response["result"] == "ok":
+            return True
+        else:
+            eel.show_toast("danger", response["message"], 2000) # type: ignore
+            return False
+
+    else:
+        eel.show_toast("danger", response["message"], 2000) # type: ignore
+        return False
+
+@eel.expose
+def logout_from_server():
+    global api
+    response = api.logout()
+    print(response)
+    if response["result"] == "ok":
+        eel.show_toast("success", "Logged out successfully!", 2000) # type: ignore
+        return True
+    else:
+        eel.show_toast("danger", response["message"], 2000) # type: ignore
+        return False
+
+@eel.expose
+def get_pending_invites():
+    global api
+    try:
+        response = api.invitations()
+        print(response)
+        if response["result"] == "ok":
+            return response["values"]
+        else:
+            eel.show_toast("danger", response["message"], 2000) # type: ignore
+            return []
+    except Exception as e:
+        print(e)
+        return []
+
+
+@eel.expose
+def get_friends():
+    global api
+    response = api.friends()
+    print(response)
+    if response["result"] == "ok":
+        return response["values"]
+    else:
+        eel.show_toast("danger", response["message"], 2000) # type: ignore
+        return []
+
+@eel.expose
+def get_online_users():
+    global api
+    response = api.getOnlineUsers()
+    print(response)
+    if response["result"] == "ok":
+        return response["values"]
+    else:
+        eel.show_toast("danger", response["message"], 2000) # type: ignore
+        return []
+
+@eel.expose
+def get_search_users(search):
+    global api
+    try:
+        response = api.search(search)
+        print(response)
+        if response["result"] == "ok":
+            return response["values"]
+        else:
+            eel.show_toast("danger", response["message"], 2000) # type: ignore
+            return []
+    except Exception as e:
+        print(e)
+        return []
+
+
+
+@eel.expose
+def add_friend(username):
+    global api
+    try:
+        response = api.invite(username)
+        print(response)
+        if response["result"] == "ok":
+            eel.show_toast("success", "Friend request sent!", 2000) # type: ignore
+            return True
+        else:
+            eel.show_toast("danger", response["message"], 2000) # type: ignore
+            return False
+    except Exception as e:
+        print(e)
+        return False
+
+@eel.expose
+def accept_invite(username):
+    global api
+    try:
+        response = api.accept(username)
+        print(response)
+        if response["result"] == "ok":
+            eel.show_toast("success", "Friend request accepted!", 2000) # type: ignore
+            return True
+        else:
+            eel.show_toast("danger", response["message"], 2000) # type: ignore
+            return False
+    except Exception as e:
+        print(e)
+        return False
+
+@eel.expose
+def reject_invite(username):
+    global api
+    # TODO: Implement this
+    # try:
+    #     response = api.reject(username)
+    #     print(response)
+    #     if response["result"] == "ok":
+    #         eel.show_toast("success", "Friend request rejected!", 2000) # type: ignore
+    #         return True
+    #     else:
+    #         eel.show_toast("danger", response["message"], 2000) # type: ignore
+    #         return False
+    # except Exception as e:
+    #     print(e)
+    #     return False
+
+@eel.expose
+def remove_friend(username):
+    print("Removing friend: " + username)
+    print("Not implemented yet!")
 
 
 
@@ -58,6 +203,7 @@ def initProjectPath():
     # Use the script_directory as the project directory
     project_directory = script_directory
     os.chdir(project_directory)
+
 
 def startApp():
     global api
@@ -70,7 +216,7 @@ def startApp():
         print("Initializing web app...")
         eel.init("web")
         print("Starting index.html...")
-        eel.start("index.html")
+        eel.start("index.html", port = 0)
 
     except (SystemExit, MemoryError, KeyboardInterrupt):
 
@@ -84,9 +230,11 @@ def startApp():
         #on windows:
         if os.name == 'nt':
             os.system('taskkill /F /IM python.exe /T')
+            return 0
         #on unix:
         else:
             os.system('pkill -f python')
+            return 0
 
 
 

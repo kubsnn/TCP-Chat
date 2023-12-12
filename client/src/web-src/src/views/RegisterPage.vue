@@ -48,16 +48,9 @@ export default {
                 this.loading = true
 
 
-                const registerMessage = JSON.stringify(
-                    {
-                        'action': 'register',
-                        'creds': {
-                            'username': this.username,
-                            'password': this.password
-                        }
-                    }
-                )
-                eel.send_data(registerMessage);
+                eel.register_to_server(this.username, this.password)(this.handleResponse);
+
+
             } catch (error) {
                 console.log(error)
 
@@ -90,6 +83,27 @@ export default {
                 return false
             }
             return true
+        },
+        handleResponse(response) {
+
+            try {
+                if (response == true) {
+                    this.loading = false
+                    eventBus.emit('show-toast', 'success', 'Successfully registered', 5000);
+                    this.$router.push('/chat')
+                }
+                else {
+                    this.loading = false
+                    eventBus.emit('show-toast', 'danger', 'Error registering', 5000);
+                }
+            }
+            catch (error) {
+                console.log(error)
+                eventBus.emit('show-toast', 'danger', 'Error registering', 5000);
+                this.loading = false
+                return
+            }
+
         },
     },
 
@@ -128,7 +142,7 @@ export default {
                 validation-status="error" label="Repeat Password" />
 
 
-            <fwb-button class="mt-4 justify-center" size="lg" color="pink" @click="onRegister()">Login
+            <fwb-button class="mt-4 justify-center" size="lg" color="pink" @click="onRegister()">Register
                 <template #suffix>
                     <font-awesome-icon v-if="loading" icon="fa-solid fa-spinner" spin-pulse />
                     <font-awesome-icon v-else icon="fa-solid fa-right-to-bracket" />
