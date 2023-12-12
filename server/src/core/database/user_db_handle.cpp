@@ -211,6 +211,37 @@ bool UserDbHandle::acceptInvitation(int id, const std::string& friend_name) cons
     return true;
 }
 
+bool UserDbHandle::removeFriend(int id, const std::string& friend_name) const {
+    int friend_id = getByName(friend_name).id();
+    
+    removeFriendForce(id, friend_id);
+    removeFriendForce(friend_id, id);
+
+    return true;
+}
+
+
+bool UserDbHandle::isFriend(const std::string& username, const std::string& friend_name) const {
+    static constexpr auto query = "SELECT COUNT(*) FROM friends JOIN users ON friend_id = id WHERE user_id = ? AND username = ? AND status = 1;";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error("cannot prepare is friend query");
+    }
+
+    sqlite3_bind_int(stmt, 1, getByName(username).id());
+    sqlite3_bind_text(stmt, 2, friend_name.c_str(), -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        int count = sqlite3_column_int(stmt, 0);
+        sqlite3_finalize(stmt);
+        return (count > 0); // User exists if count is greater than 0
+    }
+
+    sqlite3_finalize(stmt);
+
+    return false;
+}
+
 std::vector<User> UserDbHandle::getFriends(int id) const {
     static constexpr auto query = "SELECT friend_id, username FROM friends JOIN users ON friend_id = id WHERE user_id = ? AND status = 1;";
     sqlite3_stmt* stmt;
@@ -303,6 +334,25 @@ void UserDbHandle::addFriendForce(int id, int friend_id) const {
 
     if (rc != SQLITE_DONE) {
         throw std::runtime_error("cannot add friend");
+    }
+}
+
+void UserDbHandle::removeFriendForce(int id, int friend_id) const {
+    static constexpr auto query = "DELETE FROM friends WHERE user_id = ? AND friend_id = ? AND status = 1;";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db_, query, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error("cannot prepare remove friend query");
+    }
+
+    sqlite3_bind_int(stmt, 1, id);
+    sqlite3_bind_int(stmt, 2, friend_id);
+
+    int rc = sqlite3_step(stmt);
+
+    sqlite3_finalize(stmt);
+
+    if (rc != SQLITE_DONE) {
+        throw std::runtime_error("cannot remove friend");
     }
 }
 

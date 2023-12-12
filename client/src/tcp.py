@@ -15,7 +15,6 @@ from cryptography.hazmat.backends import default_backend
 from typing import Callable, Any
 
 
-
 def resolve_to_ip(host) -> str:
     try:
         # Check if the provided input is already an IP address
@@ -63,14 +62,10 @@ class Client:
         def listener():
             print("Listening...")
             while not self.stop_listener:
-                try:
-                    data = self.__receive()
-                    if data is None: # connection closed
-                        break
-                    callback(data)
-                except:
+                data = self.__receive()
+                if data is None: # connection closed
                     break
-            print("Listener thread closed!")
+                callback(data)
 
         self.listener_thread = threading.Thread(target=listener)
         #self.listener_thread.daemon = True

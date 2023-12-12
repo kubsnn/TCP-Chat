@@ -33,6 +33,10 @@ Controller::Controller(Client& client, Cache& cache)
         if (!verifyGetInvitationsRequest(data)) return fail("invalid request format");
         return this->getInvitations(data);
     });
+    addMethod("removeFriend", [this](const json& data) {
+        if (!verifyRemoveFriendRequest(data)) return fail("invalid request format");
+        return this->removeFriend(data);
+    });
 }
 
 json Controller::invoke(const std::string& method, const json& data) const {
@@ -50,6 +54,11 @@ json Controller::sendTo(const json& data) const {
         return fail("user is offline");
     }
 
+    UserDbHandle db;
+    if (!db.isFriend(client_.username(), receiver_name)) {
+        return fail("you are not friends");
+    }
+    
     json message = {
         { "from", client_.username() },
         { "to", receiver_name },
@@ -125,7 +134,7 @@ json Controller::getFriends(const json& data) const {
 
     json::array response;
     response.reserve(user.friends().size());
-    
+
     for (const auto& f : user.friends()) {
         json json_dto = {
             { "username", f.username() },
@@ -170,6 +179,27 @@ json Controller::getInvitations(const json& data) const {
     return ok(std::move(response));
 }
 
+json Controller::removeFriend(const json& data) const {
+    const auto& friend_name = data["who"].get<std::string>();
+
+    UserDbHandle db;
+    
+    if (!db.exists(friend_name)) {
+        return fail("friend to remove doesn't exist");
+    }
+
+    if (!db.isFriend(client_.username(), friend_name)) {
+        return fail("you are not friends");
+    }
+
+    auto user = db.getByName(client_.username());
+    if (!db.removeFriend(user.id(), friend_name)) {
+        return fatal();
+    }
+
+    return ok();    
+}
+
 bool Controller::verifySendToRequest(const json& j) const {
     const auto& data = j.get<json::dictionary>();
     if (!data.contains("who")) return false;
@@ -209,5 +239,12 @@ bool Controller::verifyAcceptInvitationRequest(const json& j) const {
 }
 
 bool Controller::verifyGetInvitationsRequest(const json& j) const {
+    return true;
+}
+
+bool Controller::verifyRemoveFriendRequest(const json &data) const {
+    const auto& dict = data.get<json::dictionary>();
+    if (!dict.contains("who")) return false;
+    if (!dict["who"].is<std::string>()) return false;
     return true;
 }

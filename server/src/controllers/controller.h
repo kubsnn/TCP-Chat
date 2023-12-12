@@ -21,6 +21,7 @@ private:
     json getFriends(const json& data) const;
     json acceptInvitation(const json& data) const;
     json getInvitations(const json& data) const;
+    json removeFriend(const json& data) const;
 
     bool verifySendToRequest(const json& data) const;
     bool verifyUsersOnlineRequest(const json& data) const;
@@ -29,6 +30,7 @@ private:
     bool verifyGetFriendsRequest(const json& data) const;
     bool verifyAcceptInvitationRequest(const json& data) const;
     bool verifyGetInvitationsRequest(const json& data) const;
+    bool verifyRemoveFriendRequest(const json& data) const;
     
     Client& client_;
     Cache& cache_;
