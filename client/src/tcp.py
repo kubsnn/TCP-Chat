@@ -14,6 +14,8 @@ from cryptography.hazmat.backends import default_backend
 
 from typing import Callable, Any
 
+
+
 def resolve_to_ip(host) -> str:
     try:
         # Check if the provided input is already an IP address
@@ -24,7 +26,7 @@ def resolve_to_ip(host) -> str:
             # It's not an IP address, so resolve it to an IP
             return socket.gethostbyname(host)
         except socket.gaierror:
-            return None  # Unable to resolve the hostname
+            return ""  # Unable to resolve the hostname
 
 class Client:
     def __init__(self, host: str, port: int):
@@ -61,10 +63,13 @@ class Client:
         def listener():
             print("Listening...")
             while not self.stop_listener:
-                data = self.__receive()
-                if data is None: # connection closed
+                try:
+                    data = self.__receive()
+                    if data is None: # connection closed
+                        break
+                    callback(data)
+                except:
                     break
-                callback(data)
             print("Listener thread closed!")
 
         self.listener_thread = threading.Thread(target=listener)
@@ -72,14 +77,17 @@ class Client:
         self.listener_thread.start()
 
     def exit(self):
-        if self.socket is None:
-            return
-        
-        self.socket.close() 
-        print("Closing connection...")
-        self.stop_listener = True
-        self.listener_thread.join(0)
-        
+        try:
+            if self.socket is None:
+                return
+
+            self.socket.close()
+            print("Closing connection...")
+            self.stop_listener = True
+            self.listener_thread.join(0)
+            print("Connection closed!")
+        except:
+            pass
 
     def send(self, data: str) -> bool:
         """
@@ -151,7 +159,7 @@ class Client:
         self.server_public_key = serialization.load_pem_public_key(
             data["public_key"].encode('utf-8'),
             backend=default_backend()
-        )  
+        )
 
         my_key = { "action" : "init", "public_key" : my_public_key.decode('utf-8') }
         try:
@@ -183,7 +191,7 @@ class Client:
                 chunk = data[i:i+count]
                 encrypted_chunk = self.server_public_key.encrypt(chunk, padding.PKCS1v15())
                 self.socket.send(encrypted_chunk)
-            
+
         except socket.error as e:
             print(str(e))
             return False
@@ -209,7 +217,7 @@ class Client:
                 chunk = self.socket.recv(count)
             except:
                 return None
-            
+
             decrypted_chunk = self.private_key.decrypt(chunk, padding.PKCS1v15())
             data += decrypted_chunk
 
@@ -316,5 +324,5 @@ if __name__ == "__main__":
     client.send(json.dumps({"action" : "register", "creds": {"username" : "Łukasz".encode('unicode_escape').decode('utf-8'), "password" : "test"}}))
     client.send(json.dumps({"action" : "login", "creds": {"username" : "Łukasz".encode('unicode_escape').decode('utf-8'), "password" : "test"}}))
     client.send(json.dumps({"action" : "usersOnline"}))
-    
+
 

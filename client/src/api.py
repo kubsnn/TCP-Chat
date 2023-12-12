@@ -13,7 +13,7 @@ Method              | Description
 __init__()          | Initializes a API object.
 connect()           | Connects to the server.
 close()             | Closes the connection with the server.
-                    | 
+                    |
 register()          | Sends a registration request to the server with the provided username and password.
 login()             | Sends a login request to the server with the provided username and password.
 logout()            | Sends a logout request to the server.
@@ -79,7 +79,7 @@ class API:
         self.client.send(json.dumps(request))
         return self.__getResponse("register")
 
-    def login(self, username: str, password: str) -> dict[str, Any]: 
+    def login(self, username: str, password: str) -> dict[str, Any]:
         """
         Sends a login request to the server with the provided username and password.
 
@@ -152,7 +152,7 @@ class API:
         request = {"action" : "invite", "who" : self.__encode_utf8(username)}
         self.client.send(json.dumps(request))
         return self.__getResponse("invite")
-    
+
     def accept(self, username: str) -> dict[str, Any]:
         """
         Sends an accept request to the server to accept an invitation from a user with the provided username.
@@ -227,16 +227,16 @@ class API:
             if count > 100:
                 # TIMEOUT
                 print("TIMEOUT")
-                response = None
+                response = {"success" : False, "message" : "Timeout"}
                 break
 
         if response != None:
             with self.lock.gen_wlock():
                 del self.responses[action]
 
-        return response
+        return response or {}
 
-    def __handleResponse(self, data): 
+    def __handleResponse(self, data):
         if "action" in data:
             if data["action"] == "received":
                 data["from"] = self.__decode_utf8(data["from"])
@@ -248,7 +248,7 @@ class API:
                 self.responses[data["action"]] = data
         else:
             print("Unknown response: ", data)
-    
+
     def __encode_utf8(self, string: str) -> str:
         return string.encode('unicode-escape').decode('utf-8')
 
@@ -256,7 +256,7 @@ class API:
         return string.encode('utf-8').decode('unicode-escape')
 
 
-    
+
 # TESTS
 if __name__ == '__main__':
     host = '127.0.0.1'
@@ -267,7 +267,7 @@ if __name__ == '__main__':
 
     requests = API(host, port, receiver)
     requests.connect()
-    
+
     print(requests.register("Łukasz", "test"))
 
     print(requests.register("Jędrzej", "test"))
@@ -284,7 +284,7 @@ if __name__ == '__main__':
     print(requests.logout())
 
     requests2 = API(host, port, receiver)
-    requests2.connect() 
+    requests2.connect()
 
     print(requests2.login("Jędrzej", "test"))
     print(requests.login("Łukasz", "test"))
