@@ -239,7 +239,7 @@ To send message to an online user, client must be logged in and send following r
 ```
 
 - "action" must be set to "sendto".
-- "who" must be set to the username of the recipient.
+- "who" must be set to the username of the recipient (must be online and your friend).
 - "message" must be set to the message to be sent.
 
 ## Send Message Response
@@ -387,3 +387,30 @@ The server will respond with a JSON object in the following format:
 - "result" will be set to "ok" if the request is successful or "fail" in case of an error.
 - "values" (on success) will contain a list of invitations.
 - "message" (on fail) will provide a failure reason in case of a request failure.
+
+# Remove Friend Request
+
+To remove a friend from a friend list, client must be logged in and send following request:
+
+```json
+{
+  "action" : "removeFriend",
+  "who" : "<USERNAME>"
+}
+```
+
+- "action" must be set to "removeFriend".
+- "who" must be set to the username of the recipient.
+
+## Remove Friend Response
+
+The server will respond with a JSON object in the following format:
+
+```json
+{
+  "response" : true,
+  "action" : "removeFriend",
+  "result" : "ok or fail",
+  "message" : "failure reason" (optional)
+}
+```
