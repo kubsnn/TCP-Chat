@@ -36,7 +36,7 @@ export default {
                     if (response == true) {
                         this.loading = false
                         eventBus.emit('show-toast', 'success', 'Successfully logged in', 5000);
-                        this.$router.push('/chat')
+                        this.changeRoute('/chat')
                     }
                     else {
                         this.loading = false
@@ -61,7 +61,6 @@ export default {
         },
         changeRoute(newRoute) {
             this.$router.push(newRoute);
-
         },
     },
 

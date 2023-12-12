@@ -68,11 +68,11 @@ export default {
             });
 
             // Remove contacts that are not friends anymore
-            // this.contacts.forEach((contact) => {
-            //     if (!response.some((friend) => friend === contact.name)) {
-            //         this.contacts.splice(this.contacts.indexOf(contact), 1);
-            //     }
-            // });
+            this.contacts.forEach((contact, index) => {
+                if (!response.some((friend) => friend.username === contact.name)) {
+                    this.contacts.splice(index, 1);
+                }
+            });
 
             console.log("Contacts: ", this.contacts);
         },

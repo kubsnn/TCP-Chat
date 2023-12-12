@@ -61,11 +61,9 @@ export default {
 
 
 <template>
-    <fwb-button @click="showModal" color="pink" class="w-full mb-2"> Add Friend </fwb-button>
+    <fwb-button @click="showModal" color="pink" class="w-full mb-2"> Manage Friends </fwb-button>
     <AddContact :isShowModal="isShowModal" :closeModal="closeModal" :friendsList="contacts"
         @refresh-friends="emits('refresh-friends')" />
-
-
 
     <ul class="w-full h-full flex flex-col m-0 p-2 mb-2 rounded-lg bg-slate-200 dark:bg-slate-800"
         v-if="contacts.length > 0">
@@ -73,9 +71,6 @@ export default {
             class="w-full rounded-lg p-2 mb-2 flex"
             :class="{ 'bg-pink-600 dark:bg-pink-600': contact.active, 'bg-pink-300 dark:bg-pink-950': !contact.active }" />
     </ul>
-
-    <fwb-button @click="refreshInvitations" color="pink" class="w-full mb-2"> Refresh Invites </fwb-button>
-
 
     <fwb-sidebar-dropdown-item>
         <template #trigger> Invites </template>

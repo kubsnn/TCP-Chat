@@ -1,5 +1,6 @@
 <script setup>
 import { FwbButton, FwbHeading, FwbInput } from 'flowbite-vue'
+import { eventBus } from '@/services/EventBus';
 
 </script>
 
@@ -90,7 +91,8 @@ export default {
                 if (response == true) {
                     this.loading = false
                     eventBus.emit('show-toast', 'success', 'Successfully registered', 5000);
-                    this.$router.push('/chat')
+                    this.changeRoute('/chat')
+
                 }
                 else {
                     this.loading = false

@@ -61,7 +61,7 @@ export default {
     <fwb-modal v-if="isShowModal" @close="closeModal">
         <template #header>
             <div class="flex items-center text-lg text-pink-900 dark:text-pink-300">
-                Add Friends
+                Add / Remove Friends
             </div>
         </template>
         <template #body>
