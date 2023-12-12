@@ -214,6 +214,17 @@ class API:
 
         return response
 
+    def remove(self, username: str) -> dict[str, Any]:
+        """
+        Sends a request to the server to remove a friend.
+
+        Returns:
+            json: The response from the server.
+        """
+        request = {"action" : "removeFriend", "who" : self.__encode_utf8(username)}
+        self.client.send(json.dumps(request))
+        return self.__getResponse("removeFriend")
+    
     # private:
     def __getResponse(self, action) -> dict[str, Any]:
         count = 0
@@ -280,6 +291,9 @@ if __name__ == '__main__':
     print(requests.login("Łukasz", "test"))
     print(requests.invitations())
     print(requests.accept("Jędrzej"))
+    print(requests.friends())
+    print(requests.friends())
+    print(requests.remove("Jędrzej"))
     print(requests.friends())
     print(requests.logout())
 
