@@ -31,6 +31,8 @@ public:
 
     bool addFriend(int id, const std::string& friend_name) const;
     bool acceptInvitation(int id, const std::string& friend_name) const;
+    bool removeFriend(int id, const std::string& friend_name) const;
+    bool isFriend(const std::string& username, const std::string& friend_name) const;
     std::vector<User> getFriends(int id) const;
     std::vector<User> getInvitations(int id) const;
 
