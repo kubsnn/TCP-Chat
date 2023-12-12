@@ -140,6 +140,84 @@ TEST_F(ControllerTest, AddFriendAlreadyInvitedByOther) {
     db.drop();
 }
 
+TEST_F(ControllerTest, AddFriendAcceptNotInvited) {
+    auto result = controller2->invoke("accept", accept_friend_json);
+    EXPECT_EQ(result["result"].get<std::string>(), "fail");
+
+    UserDbHandle db;
+    db.drop();
+}
+
+TEST_F(ControllerTest, RemoveFriend) {
+    controller1->invoke("invite", add_friend_json);
+    controller2->invoke("accept", accept_friend_json);
+    auto result = controller1->invoke("removeFriend", {
+        { "action", "removeFriend" },
+        { "who", "test2" }
+    });
+    EXPECT_EQ(result["result"].get<std::string>(), "ok");
+
+    UserDbHandle db;
+    db.drop();
+}
+
+TEST_F(ControllerTest, RemoveFriendNotFriends) {
+    auto result = controller1->invoke("removeFriend", {
+        { "action", "removeFriend" },
+        { "who", "test2" }
+    });
+    EXPECT_EQ(result["result"].get<std::string>(), "fail");
+
+    UserDbHandle db;
+    db.drop();
+}
+
+TEST_F(ControllerTest, RemoveFriendNotInvited) {
+    controller1->invoke("invite", add_friend_json);
+    auto result = controller1->invoke("removeFriend", {
+        { "action", "removeFriend" },
+        { "who", "test2" }
+    });
+    EXPECT_EQ(result["result"].get<std::string>(), "fail");
+
+    UserDbHandle db;
+    db.drop();
+}
+
+TEST_F(ControllerTest, RemoveFriendNotInvitedByOther) {
+    controller1->invoke("invite", add_friend_json);
+    auto result = controller2->invoke("removeFriend", {
+        { "action", "removeFriend" },
+        { "who", "test1" }
+    });
+    EXPECT_EQ(result["result"].get<std::string>(), "fail");
+
+    UserDbHandle db;
+    db.drop();
+}
+
+TEST_F(ControllerTest, RemoveFriendNotExists) {
+    auto result = controller1->invoke("removeFriend", {
+        { "action", "removeFriend" },
+        { "who", "test3" }
+    });
+    EXPECT_EQ(result["result"].get<std::string>(), "fail");
+
+    UserDbHandle db;
+    db.drop();
+}
+
+TEST_F(ControllerTest, GetFriends) {
+    controller1->invoke("invite", add_friend_json);
+    controller2->invoke("accept", accept_friend_json);
+    auto friends = controller1->invoke("friends", json::dictionary());
+    EXPECT_EQ(friends["result"].get<std::string>(), "ok");
+    EXPECT_EQ(friends["values"][0]["username"].get<std::string>(), "test2");
+
+    UserDbHandle db;
+    db.drop();
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
