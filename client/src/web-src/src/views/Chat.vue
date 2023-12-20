@@ -91,16 +91,14 @@ export default {
         refreshFriends() {
             console.log("Refreshing friends");
             this.getFriends();
-            //this.getOnlineUsers();
+            this.getOnlineUsers();
         },
 
         setActiveContact(contact) {
             console.log("Setting active contact to: ", contact);
-            this.getFriends();
+            this.refreshFriends();
             this.activeContact = contact;
             eel.get_all_messages(this.username)(this.update_messages);
-
-
         },
 
         update_messages(messages) {
