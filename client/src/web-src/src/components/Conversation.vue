@@ -55,7 +55,7 @@ export default {
             <fwb-badge v-if="online" size="xs" type="green">Online</fwb-badge>
             <fwb-badge v-else size="xs" type="red">Offline</fwb-badge>
         </div>
-        <div class="w-full grow flex flex-col-reverse items-start p-2">
+        <div class="w-full grow overflow-x-hidden overflow-y-auto flex flex-col-reverse items-start p-2">
             <message-bubble v-if="messages.length > 0" v-for="message in messages" :key="message.id"
                 :message="message.message" :isResponder="message.isResponder" />
             <message-bubble v-else :message="'Start Your Conversation'" :isResponder="false" />

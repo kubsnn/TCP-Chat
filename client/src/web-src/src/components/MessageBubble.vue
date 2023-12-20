@@ -1,7 +1,7 @@
 <template>
-    <div class="flex w-full justify-start p-2" :class="mContainerClass">
+    <div class="flex w-full justify-start  p-2" :class="mContainerClass">
         <div :class="messageClass">
-            <p class="text-white">{{ message }}</p>
+            <p class="text-white w-full text-pretty text-ellipsis break-words overflow-hidden">{{ message }}</p>
         </div>
     </div>
 </template>
@@ -21,8 +21,8 @@ export default {
     computed: {
         messageClass() {
             return [
-                'p-2 rounded-lg',
-                this.isResponder ? 'bg-pink-300 dark:bg-pink-950' : 'bg-pink-600 dark:bg-pink-600'
+                'p-2 rounded-lg ',
+                this.isResponder ? 'bg-pink-300 text-end dark:bg-pink-950' : 'bg-pink-600 text-start  dark:bg-pink-600'
             ];
         },
         mContainerClass() {

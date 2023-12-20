@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-row justify-start w-full h-full">
-        <div class="flex-auto w-full min-w-96  p-2">
+        <div class="p-2" :class="activeContact == null ? 'w-full' : 'w-64 grow-0'">
             <fwb-tabs v-model="activeTab" class="p-5" color="pink">
                 <fwb-tab name="contacts" title="Contacts">
                     <AllContacts :contacts="contacts" :friends="friends" :onlineUsers="onlineUsers"
@@ -11,9 +11,9 @@
                 </fwb-tab>
             </fwb-tabs>
         </div>
-        <div class="grow w-3/4  p-2">
-            <Conversation v-if="activeContact !== null" :contact="activeContact"
-                :online="contacts.find(contact => contact.name === activeContact).online" :messages="messages" />
+        <div v-if="activeContact !== null" class="grow  overflow-x-hidden p-2">
+            <Conversation :contact="activeContact" :online="contacts.find(contact => contact.name === activeContact).online"
+                :messages="messages" />
         </div>
     </div>
 </template>
