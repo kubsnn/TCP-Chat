@@ -1,74 +1,3 @@
-<script setup>
-import Contact from '@/components/Contact.vue'
-import AddContact from '@/components/AddContact.vue'
-import { FwbButton, FwbBadge, FwbHeading, FwbInput, FwbSidebar, FwbSidebarItem, FwbSidebarDropdownItem } from 'flowbite-vue'
-import { eventBus } from '@/services/EventBus';
-import { ref } from 'vue'
-
-const isShowModal = ref(false)
-
-function closeModal() {
-    isShowModal.value = false
-}
-function showModal() {
-    isShowModal.value = true
-}
-
-
-</script>
-
-<script>
-
-export default {
-    components: {
-        Contact
-    },
-    props: {
-        contacts: {
-            type: Array,
-            default: []
-        },
-        activeContact: {
-            type: String,
-            default: ''
-        },
-    },
-    emits: {
-        'refresh-friends': null,
-        'open-chat': null
-    },
-    mounted() {
-        this.refreshInvitations();
-    },
-    data() {
-        return {
-            pendingInvites: [],
-        };
-    },
-    methods: {
-        handlePendingInvites(response) {
-            console.log(response);
-            this.pendingInvites = response;
-        },
-        async refreshInvitations() {
-            await eel.get_pending_invites()(this.handlePendingInvites);
-            this.$emit('refresh-friends');
-
-        },
-        async acceptInvite(username) {
-            await eel.accept_invite(username)(this.refreshInvitations);
-        },
-        async rejectInvite(username) {
-            await eel.reject_invite(username)(this.refreshInvitations);
-        },
-        openChat(contact) {
-            console.log(contact);
-            this.$emit('open-chat', contact.name);
-        }
-    },
-}
-</script>
-
 
 <template>
     <fwb-button @click="showModal" color="pink" class="w-full mb-2"> Manage Friends </fwb-button>
@@ -114,3 +43,72 @@ export default {
         </template>
     </fwb-sidebar-dropdown-item>
 </template>
+
+
+
+<script>
+import Contact from '@/components/Contact.vue'
+import AddContact from '@/components/AddContact.vue'
+import { FwbButton, FwbSidebarItem, FwbSidebarDropdownItem } from 'flowbite-vue'
+
+export default {
+    components: {
+        Contact,
+        AddContact,
+        FwbButton,
+        FwbSidebarItem,
+        FwbSidebarDropdownItem
+    },
+    props: {
+        contacts: {
+            type: Array,
+            default: []
+        },
+        activeContact: {
+            type: String,
+            default: ''
+        },
+    },
+    emits: {
+        'refresh-friends': null,
+        'open-chat': null
+    },
+    mounted() {
+        this.refreshInvitations();
+    },
+    data() {
+        return {
+            pendingInvites: [],
+            isShowModal: false
+        };
+    },
+    methods: {
+        closeModal() {
+            this.isShowModal = false
+        },
+        showModal() {
+            this.isShowModal = true
+        },
+        handlePendingInvites(response) {
+            console.log(response);
+            this.pendingInvites = response;
+        },
+        async refreshInvitations() {
+            await eel.get_pending_invites()(this.handlePendingInvites);
+            this.$emit('refresh-friends');
+
+        },
+        async acceptInvite(username) {
+            await eel.accept_invite(username)(this.refreshInvitations);
+        },
+        async rejectInvite(username) {
+            await eel.reject_invite(username)(this.refreshInvitations);
+        },
+        openChat(contact) {
+            console.log(contact);
+            this.$emit('open-chat', contact.name);
+        }
+    },
+}
+</script>
+
