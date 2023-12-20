@@ -76,7 +76,10 @@ jobs:
             task
           key: ${{ runner.os }}-task-${{ hashFiles('**/task') }}
           restore-keys: |
-            ${{ runner.os }}-task-
+            ${{ runner.os }}-task
+
+      - name: Show directories
+        run: ls
 
       - name: Download Task executable for ${{ matrix.os }}
         run: |
