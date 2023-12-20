@@ -1,10 +1,10 @@
 <template>
     <div class="flex flex-row justify-start w-full h-full">
-        <div class="w-64 p-2">
+        <div class="flex-auto p-2">
             <fwb-tabs v-model="activeTab" class="p-5" color="pink">
                 <fwb-tab name="contacts" title="Contacts">
                     <AllContacts :contacts="contacts" :friends="friends" :onlineUsers="onlineUsers"
-                        @refresh-friends="refreshFriends" />
+                        :activeContact="activeContact" @refresh-friends="refreshFriends" @open-chat="setActiveContact" />
                 </fwb-tab>
                 <fwb-tab name="settings" title="Settings">
                     <HamburgerMenu />
@@ -12,8 +12,8 @@
             </fwb-tabs>
         </div>
         <div class="grow p-2">
-            <Conversation v-if="activeContact !== null" :username="contacts[activeContact].name"
-                :online="contacts[activeContact].online" :messages="messages" />
+            <Conversation v-if="activeContact !== null" :contact="activeContact"
+                :online="contacts.find(contact => contact.name === activeContact).online" :messages="messages" />
         </div>
     </div>
 </template>
@@ -35,16 +35,11 @@ export default {
     data() {
         return {
             contacts: [],
-            friends: [],
             onlineUsers: [],
-            messages: [
-                { id: 1, message: 'years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of eth', isResponder: false },
-                { id: 2, message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.', isResponder: true },
-                { id: 3, message: 'There are many variations of passages of Lorem Ipsum available,', isResponder: false },
-                { id: 4, message: 'It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable.', isResponder: true }
-            ],
+            messages: [],
             activeTab: 'contacts',
             activeContact: null,
+            username: this.$store.getters.getLoggedUser
         };
     },
     methods: {
@@ -63,7 +58,7 @@ export default {
             // Add friends to contacts if they are not already there
             response.forEach((friend) => {
                 if (!this.contacts.some((contact) => contact.name === friend.username)) {
-                    this.contacts.push({ name: friend.username, active: false, online: friend.online });
+                    this.contacts.push({ name: friend.username, online: friend.online });
                 }
             });
 
@@ -98,10 +93,53 @@ export default {
             this.getFriends();
             //this.getOnlineUsers();
         },
+
+        setActiveContact(contact) {
+            console.log("Setting active contact to: ", contact);
+            this.getFriends();
+            this.activeContact = contact;
+            eel.get_all_messages(this.username)(this.update_messages);
+
+
+        },
+
+        update_messages(messages) {
+            console.log("Updating messages");
+            console.log(messages);
+
+            const mappedMessages = messages.reduce((acc, message) => {
+                if (message[1] === this.activeContact) {
+                    acc.push({
+                        id: message[0],
+                        message: message[2],
+                        isResponder: message[3] === 0,
+                        timestamp: message[4],
+                    });
+                }
+                return acc;
+            }, []
+            );
+
+            //reverse array to show newest messages at the bottom
+            mappedMessages.reverse();
+            console.log("Mapped messages: ", mappedMessages);
+            this.refreshFriends();
+
+            this.messages = mappedMessages;
+        }
     },
     beforeMount() {
+        eel.expose(
+            this.update_messages,
+            'update_messages'
+        );
         this.getFriends();
         this.getOnlineUsers();
+    },
+    mounted() {
+        console.log("Logged in as: ", this.username);
+        this.refreshFriends();
+        eel.get_all_messages(this.username)(this.update_messages);
     },
 };
 </script>

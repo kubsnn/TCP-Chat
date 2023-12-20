@@ -9,12 +9,11 @@ import MessageBubble from '@/components/MessageBubble.vue'
 export default {
     data() {
         return {
-            username: '',
-            password: '',
+            currentMessage: '',
         };
     },
     props: {
-        username: {
+        contact: {
             type: String,
             default: 'contact1'
         },
@@ -28,8 +27,19 @@ export default {
         }
     },
     methods: {
-        sendMessage() {
-            console.log('send message')
+        async sendMessage() {
+            console.log('send message', this.currentMessage)
+            await eel.send_message(this.$store.getters.getLoggedUser, this.contact, this.currentMessage)(this.handleResponse);
+        },
+        handleResponse(response) {
+            console.log(response)
+            this.currentMessage = ''
+        },
+        packMessage(message) {
+            return {
+                timestamp: new Date(),
+                message: message,
+            }
         }
     }
 }
@@ -40,17 +50,18 @@ export default {
     <div class="w-full h-full flex flex-col  bg-slate-200 dark:bg-slate-800 rounded-lg">
 
         <div class="w-full h-16 flex-none  flex flex-row justify-between items-center p-2 text-black dark:text-white">
-            <fwb-heading tag="h3" align="Left">{{ username }}</fwb-heading>
+            <fwb-heading class="pl-4" tag="h3" align="Left">{{ username }}</fwb-heading>
 
             <fwb-badge v-if="online" size="xs" type="green">Online</fwb-badge>
             <fwb-badge v-else size="xs" type="red">Offline</fwb-badge>
         </div>
         <div class="w-full grow flex flex-col-reverse items-start p-2">
-            <message-bubble v-for="message in messages" :key="message.id" :message="message.message"
-                :isResponder="message.isResponder" />
+            <message-bubble v-if="messages.length > 0" v-for="message in messages" :key="message.id"
+                :message="message.message" :isResponder="message.isResponder" />
+            <message-bubble v-else :message="'Start Your Conversation'" :isResponder="false" />
         </div>
         <div class="w-full h-16 flex-none flex flex-row flex-nowrap justify-between items-center p-2">
-            <fwb-input class="w-full" placeholder="Type a message..." @keyup.enter="sendMessage()" />
+            <fwb-input class="w-full" placeholder="Type a message..." v-model="currentMessage" />
             <fwb-button @click="sendMessage()" color="pink" pill class="ml-2">
                 <span class=" flex flex-nowrap ">
                     Send

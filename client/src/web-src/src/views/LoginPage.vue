@@ -36,6 +36,8 @@ export default {
                     if (response == true) {
                         this.loading = false
                         eventBus.emit('show-toast', 'success', 'Successfully logged in', 5000);
+
+                        this.$store.commit('changeLoggedUser', this.username)
                         this.changeRoute('/chat')
                     }
                     else {

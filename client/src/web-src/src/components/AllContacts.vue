@@ -1,7 +1,7 @@
 <script setup>
 import Contact from '@/components/Contact.vue'
 import AddContact from '@/components/AddContact.vue'
-import { FwbButton, FwbHeading, FwbInput, FwbSidebar, FwbSidebarItem, FwbSidebarDropdownItem } from 'flowbite-vue'
+import { FwbButton, FwbBadge, FwbHeading, FwbInput, FwbSidebar, FwbSidebarItem, FwbSidebarDropdownItem } from 'flowbite-vue'
 import { eventBus } from '@/services/EventBus';
 import { ref } from 'vue'
 
@@ -13,8 +13,6 @@ function closeModal() {
 function showModal() {
     isShowModal.value = true
 }
-
-const emits = defineEmits(['refresh-friends'])
 
 
 </script>
@@ -29,7 +27,15 @@ export default {
         contacts: {
             type: Array,
             default: []
-        }
+        },
+        activeContact: {
+            type: String,
+            default: ''
+        },
+    },
+    emits: {
+        'refresh-friends': null,
+        'open-chat': null
     },
     mounted() {
         this.refreshInvitations();
@@ -55,6 +61,10 @@ export default {
         async rejectInvite(username) {
             await eel.reject_invite(username)(this.refreshInvitations);
         },
+        openChat(contact) {
+            console.log(contact);
+            this.$emit('open-chat', contact.name);
+        }
     },
 }
 </script>
@@ -65,12 +75,18 @@ export default {
     <AddContact :isShowModal="isShowModal" :closeModal="closeModal" :friendsList="contacts"
         @refresh-friends="emits('refresh-friends')" />
 
-    <ul class="w-full h-full flex flex-col m-0 p-2 mb-2 rounded-lg bg-slate-200 dark:bg-slate-800"
+    <div class="w-full h-full flex flex-col m-0 p-2 mb-2 gap-3 rounded-lg bg-slate-200 dark:bg-slate-800"
         v-if="contacts.length > 0">
-        <Contact v-for="contact in contacts" :key="contact.name" :name="contact.name" :active="contact.active"
-            class="w-full rounded-lg p-2 mb-2 flex"
-            :class="{ 'bg-pink-600 dark:bg-pink-600': contact.active, 'bg-pink-300 dark:bg-pink-950': !contact.active }" />
-    </ul>
+        <fwb-button v-for="contact in contacts" :key="contact.name" class="w-full text-left p-3 " color="dark"
+            @click="openChat(contact)" :outline="contact.name === activeContact">
+            <div class="w-full flex flex-nowrap justify-between items-center">
+
+                <span class="grow text-left">{{ contact.name }}</span>
+                <font-awesome-icon v-if="contact.online" icon="fa-solid fa-plug" class="text-green-400 text-sm" />
+                <font-awesome-icon v-else icon="fa-solid fa-plug" class="text-red-400 text-sm" />
+            </div>
+        </fwb-button>
+    </div>
 
     <fwb-sidebar-dropdown-item>
         <template #trigger> Invites </template>

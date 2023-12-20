@@ -1,26 +1,19 @@
 <template>
-    <li :class="getListItemClasses">
-        <fwb-avatar :img="avatarURL" />
-        <fwb-p weight="bold" class="grow px-2 text-center">{{ name }}</fwb-p>
-    </li>
+    <fwb-button class="w-full" gradient="pink" outline shadow="{{this.active ? 'pink' : null}}">
+        {{ name }}</fwb-button>
 </template>
 
 <script>
-import { FwbAvatar, FwbP } from 'flowbite-vue';
+import { FwbButton } from 'flowbite-vue';
 
 export default {
     components: {
-        FwbAvatar,
-        FwbP
+        FwbButton
     },
     props: {
         active: {
             type: Boolean,
             default: false
-        },
-        avatarURL: {
-            type: String,
-            default: '/images/avatar-1.jpg'
         },
         name: {
             type: String,
@@ -35,7 +28,7 @@ export default {
                 'p-2': true,
                 'mb-2': true,
                 'flex': true,
-                'justify-between': true,
+                'justify-around': true,
                 'items-center': true,
                 'bg-pink-600 dark:bg-pink-600': this.active,
                 'bg-pink-300 dark:bg-pink-950': !this.active

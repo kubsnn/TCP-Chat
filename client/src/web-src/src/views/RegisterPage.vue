@@ -1,6 +1,10 @@
 <script setup>
 import { FwbButton, FwbHeading, FwbInput } from 'flowbite-vue'
 import { eventBus } from '@/services/EventBus';
+import { useStore } from 'vuex'
+
+const store = useStore()
+
 
 </script>
 
@@ -91,6 +95,7 @@ export default {
                 if (response == true) {
                     this.loading = false
                     eventBus.emit('show-toast', 'success', 'Successfully registered', 5000);
+                    this.$store.commit('changeLoggedUser', this.username)
                     this.changeRoute('/chat')
 
                 }
