@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-row justify-start w-full h-full">
-        <div class="flex-auto p-2">
+        <div class="flex-auto w-full min-w-96  p-2">
             <fwb-tabs v-model="activeTab" class="p-5" color="pink">
                 <fwb-tab name="contacts" title="Contacts">
                     <AllContacts :contacts="contacts" :friends="friends" :onlineUsers="onlineUsers"
@@ -11,7 +11,7 @@
                 </fwb-tab>
             </fwb-tabs>
         </div>
-        <div class="grow p-2">
+        <div class="grow w-3/4  p-2">
             <Conversation v-if="activeContact !== null" :contact="activeContact"
                 :online="contacts.find(contact => contact.name === activeContact).online" :messages="messages" />
         </div>
@@ -138,6 +138,11 @@ export default {
         console.log("Logged in as: ", this.username);
         this.refreshFriends();
         eel.get_all_messages(this.username)(this.update_messages);
+
+        //refresh online status every 60 sec
+        setInterval(() => {
+            this.refreshFriends();
+        }, 60000);
     },
 };
 </script>
