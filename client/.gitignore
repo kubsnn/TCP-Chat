@@ -2,3 +2,5 @@
 app.spec
 
 .task/
+
+*.pem

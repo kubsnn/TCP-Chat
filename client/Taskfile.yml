@@ -4,9 +4,6 @@ includes:
   prerequisities: ./Taskfile_{{OS}}.yml
 
 tasks:
-  all:
-    deps: ["install", "build", "run"]
-
   help:
     silent: true
     cmds:
@@ -19,6 +16,7 @@ tasks:
       - echo "  binaries - Build the binaries using pyinstaller"
 
   run:
+    deps: ["install", "build"]
     cmds:
       - python src
 
