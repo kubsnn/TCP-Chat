@@ -1,13 +1,11 @@
 {
     "files.associations": {
-        "*.tcc": "h",
-        "variant": "h",
-        "iostream": "h",
-        "ostream": "cpp",
-        "thread": "cpp",
+        "*.rmd": "markdown",
+        "iostream": "cpp",
         "array": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
+        "*.tcc": "cpp",
         "cctype": "cpp",
         "charconv": "cpp",
         "chrono": "cpp",
@@ -56,6 +54,7 @@
         "mutex": "cpp",
         "new": "cpp",
         "numbers": "cpp",
+        "ostream": "cpp",
         "semaphore": "cpp",
         "shared_mutex": "cpp",
         "span": "cpp",
@@ -63,15 +62,18 @@
         "stdexcept": "cpp",
         "stop_token": "cpp",
         "streambuf": "cpp",
+        "thread": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp",
+        "variant": "cpp",
         "any": "cpp",
         "map": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "forward_list": "cpp",
+        "ranges": "cpp",
+        "valarray": "cpp"
     },
-    "cmake.configureOnOpen": false,
-    "editor.fontLigatures": false,
-    "editor.fontFamily": "Cascadia Mono PL, Consolas, 'Courier New', monospace",
-    "editor.fontWeight": "600",
-    "editor.mouseWheelZoom": true
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "cmake.sourceDirectory": "/home/kubs/Desktop/TCP-Chat Server/TCP-Chat/server"
 }

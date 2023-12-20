@@ -34,8 +34,10 @@ void ClientHandler::run() {
                 }
                 continue;
             }
-            logger.debug() << "Received request: " << request.to_string() << std::endl;
+            logger.debug() << "Received request: " << request.to_pretty_string(2) << std::endl;
             auto result = execute(request);
+
+            logger.debug() << "Sending response: " << result.to_pretty_string(2) << std::endl;
 
             if (result["result"].get<std::string>() == "fatal") {
                 break;

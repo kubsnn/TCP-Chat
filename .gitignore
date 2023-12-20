@@ -47,6 +47,7 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 *.cmake
+_deps/
 
 # Ignore compiled files
 *.o
@@ -65,3 +66,6 @@ server/test/friend_list_tests
 server/test/rsa_tests
 client/src/private_key.pem
 client/src/public_key.pem
+private_key.pem
+public_key.pem
+*.test

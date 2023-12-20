@@ -34,6 +34,8 @@ cd client
 3. Run Taskfile
 
 ```sh
+task install
+task build
 task run
 ```
 

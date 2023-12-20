@@ -11,7 +11,7 @@ void configure_databases();
 
 class UserDbHandle {
 public:
-    inline static const auto database_path = executable_dir / "users.db";
+    inline static const auto database_path = globals::executable_dir / "users.db";
 
     UserDbHandle();
     UserDbHandle(const UserDbHandle&) = delete;
@@ -25,11 +25,14 @@ public:
     const User getById(int id) const;
     const User getById(int id, bool include_friends) const;
     const User getByName(const std::string& username) const;
+    std::vector<User> getByNameLike(const std::string& username) const;
     const User getByName(const std::string& username, bool include_friends) const;
     bool verify(const User& credentials) const;
 
     bool addFriend(int id, const std::string& friend_name) const;
     bool acceptInvitation(int id, const std::string& friend_name) const;
+    bool removeFriend(int id, const std::string& friend_name) const;
+    bool isFriend(const std::string& username, const std::string& friend_name) const;
     std::vector<User> getFriends(int id) const;
     std::vector<User> getInvitations(int id) const;
 
@@ -37,6 +40,7 @@ public:
 private:
     bool isInvitedBy(int id, int friend_id) const;
     void addFriendForce(int id, int friend_id) const;
+    void removeFriendForce(int id, int friend_id) const;
 
     void tryInitializeTables();
 

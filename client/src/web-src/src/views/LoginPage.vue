@@ -22,18 +22,7 @@ export default {
                 //set loading to true
                 this.loading = true
 
-                const loginMessage = JSON.stringify(
-                    {
-                        'action': 'login',
-                        'creds': {
-                            'username': this.username,
-                            'password': this.password
-                        }
-                    }
-                )
-                eel.send_data(loginMessage);
-                await eel.receive_from_server()(this.handleResponse);
-
+                await eel.login_to_server(this.username, this.password)(this.handleResponse);
 
             } catch (error) {
                 console.log(error)
@@ -43,33 +32,26 @@ export default {
         handleResponse(response) {
 
             try {
-                if (response == false) {
+                try {
+                    if (response == true) {
+                        this.loading = false
+                        eventBus.emit('show-toast', 'success', 'Successfully logged in', 5000);
 
-                    this.loading = false
-                    //return error
-                    throw new Error("Error receiving response from server")
-                }
-
-                //remove whitespace after and before braces
-                response = response.trim()
-                //remove last char
-                response = response.slice(0, -1)
-
-                //jsonify string
-                response = JSON.parse(response)
-
-                if (response["response"]) {
-                    this.loading = false
-                    if (response["result"] == "fail") {
-                        console.log(response["message"])
-                        eventBus.emit('show-toast', 'danger', response["message"], 5000);
+                        this.$store.commit('changeLoggedUser', this.username)
+                        this.changeRoute('/chat')
                     }
                     else {
-                        console.log(response["message"])
-                        eventBus.emit('show-toast', 'success', response["message"], 5000);
-                        this.$router.push('/chat')
+                        this.loading = false
+                        eventBus.emit('show-toast', 'danger', 'Error logging in', 5000);
                     }
                 }
+                catch (error) {
+                    console.log(error)
+                    eventBus.emit('show-toast', 'danger', 'Error logging in', 5000);
+                    this.loading = false
+                    return
+                }
+
             }
             catch (error) {
                 console.log(error)
@@ -81,7 +63,6 @@ export default {
         },
         changeRoute(newRoute) {
             this.$router.push(newRoute);
-
         },
     },
 

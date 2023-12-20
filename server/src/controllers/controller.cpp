@@ -5,7 +5,6 @@
 Controller::Controller(Client& client, Cache& cache)
     : client_(client), cache_(cache)
 { 
-
     addMethod("sendto", [this](const json& data) {
         if (!verifySendToRequest(data)) return fail("invalid request format");
         return this->sendTo(data);
@@ -13,6 +12,10 @@ Controller::Controller(Client& client, Cache& cache)
     addMethod("usersOnline", [this](const json& data) {
         if (!verifyUsersOnlineRequest(data)) return fail("invalid request format");
         return this->usersOnline(data);
+    });
+    addMethod("search", [this](const json& data) {
+        if (!verifySearchRequest(data)) return fail("invalid request format");
+        return this->search(data);
     });
     addMethod("invite", [this](const json& data) {
         if (!verifyAddFriendRequest(data)) return fail("invalid request format");
@@ -30,9 +33,13 @@ Controller::Controller(Client& client, Cache& cache)
         if (!verifyGetInvitationsRequest(data)) return fail("invalid request format");
         return this->getInvitations(data);
     });
+    addMethod("removeFriend", [this](const json& data) {
+        if (!verifyRemoveFriendRequest(data)) return fail("invalid request format");
+        return this->removeFriend(data);
+    });
 }
 
-json Controller::invoke(const std::string &method, const json &data) const {
+json Controller::invoke(const std::string& method, const json& data) const {
     if (!client_.logged()) {
         return fail("you are not logged in");
     }
@@ -47,11 +54,18 @@ json Controller::sendTo(const json& data) const {
         return fail("user is offline");
     }
 
-    json message = json::dictionary();
-    message["from"] = client_.username();
-    message["to"] = receiver_name;
-    message["message"] = data["message"].get<std::string>();
-    message["type"] = "message";
+    UserDbHandle db;
+    if (!db.isFriend(client_.username(), receiver_name)) {
+        return fail("you are not friends");
+    }
+    
+    json message = {
+        { "from", client_.username() },
+        { "to", receiver_name },
+        { "message", data["message"].get<std::string>() },
+        { "type", "message" },
+        { "action", "received" }
+    };
 
     auto user = cache_.getUser(receiver_name);
     user.writeEncrypted(message.to_string());
@@ -66,6 +80,25 @@ json Controller::usersOnline(const json& data) const {
     for (const auto& user : users) {
         response.push_back(user.username());
     } 
+
+    return ok(std::move(response));
+}
+
+json Controller::search(const json& data) const {
+    const auto& username = data["who"].get<std::string>();
+
+    UserDbHandle db;
+    auto users = db.getByNameLike(username);
+
+    json::array response;
+    response.reserve(users.size());
+    for (const auto& user : users) {
+        json user_dto = {
+            { "username", user.username() },
+            { "online", cache_.isUserOnline(user.username()) }
+        };
+        response.push_back(std::move(user_dto));
+    }
 
     return ok(std::move(response));
 }
@@ -101,12 +134,13 @@ json Controller::getFriends(const json& data) const {
 
     json::array response;
     response.reserve(user.friends().size());
-    
+
     for (const auto& f : user.friends()) {
-        json friend_json = json::dictionary();
-        friend_json["username"] = f.username();
-        friend_json["online"] = cache_.isUserOnline(f.username());
-        response.push_back(std::move(friend_json));
+        json json_dto = {
+            { "username", f.username() },
+            { "online", cache_.isUserOnline(f.username()) }
+        };
+        response.push_back(std::move(json_dto));
     }
 
     return ok(std::move(response));
@@ -136,12 +170,34 @@ json Controller::getInvitations(const json& data) const {
     json::array response;
     response.reserve(invitations.size());
     for (const auto& inv : invitations) {
-        json invitation = json::dictionary();
-        invitation["username"] = inv.username();
-        response.push_back(std::move(invitation));
+        json invite_dto = {
+            { "username", inv.username() }
+        };
+        response.push_back(std::move(invite_dto));
     }
 
     return ok(std::move(response));
+}
+
+json Controller::removeFriend(const json& data) const {
+    const auto& friend_name = data["who"].get<std::string>();
+
+    UserDbHandle db;
+    
+    if (!db.exists(friend_name)) {
+        return fail("friend to remove doesn't exist");
+    }
+
+    if (!db.isFriend(client_.username(), friend_name)) {
+        return fail("you are not friends");
+    }
+
+    auto user = db.getByName(client_.username());
+    if (!db.removeFriend(user.id(), friend_name)) {
+        return fatal();
+    }
+
+    return ok();    
 }
 
 bool Controller::verifySendToRequest(const json& j) const {
@@ -154,6 +210,13 @@ bool Controller::verifySendToRequest(const json& j) const {
 }
 
 bool Controller::verifyUsersOnlineRequest(const json& j) const {
+    return true;
+}
+
+bool Controller::verifySearchRequest(const json& j) const {
+    const auto& data = j.get<json::dictionary>();
+    if (!data.contains("who")) return false;
+    if (!data["who"].is<std::string>()) return false;
     return true;
 }
 
@@ -176,5 +239,12 @@ bool Controller::verifyAcceptInvitationRequest(const json& j) const {
 }
 
 bool Controller::verifyGetInvitationsRequest(const json& j) const {
+    return true;
+}
+
+bool Controller::verifyRemoveFriendRequest(const json &data) const {
+    const auto& dict = data.get<json::dictionary>();
+    if (!dict.contains("who")) return false;
+    if (!dict["who"].is<std::string>()) return false;
     return true;
 }
