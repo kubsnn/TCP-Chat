@@ -179,7 +179,7 @@ class API:
         Returns:
             json: The response from the server.
         """
-        request = {"action" : "sendto", "who" : self.__encode_utf8(receiver), "message" : message}
+        request = {"action" : "sendto", "who" : self.__encode_utf8(receiver), "message" : self.__encode_utf8(message) }
         self.client.send(json.dumps(request))
         return self.__getResponse("sendto")
 
@@ -255,6 +255,7 @@ class API:
             if data["action"] == "received":
                 data["from"] = self.__decode_utf8(data["from"])
                 data["to"] = self.__decode_utf8(data["to"])
+                data["message"] = self.__decode_utf8(data["message"])
                 self.onMessage(data)
                 return
 
