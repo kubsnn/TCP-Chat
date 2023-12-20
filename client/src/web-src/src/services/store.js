@@ -9,6 +9,8 @@ const store = createStore({
 		// For example:
 		isConnected: null,
 
+		loggedUser: null,
+
 		// ...other state variables
 	},
 	mutations: {
@@ -19,7 +21,9 @@ const store = createStore({
 		changeToken(state, newToken) {
 			state.token = newToken;
 		},
-		// ...other mutation functions
+		changeLoggedUser(state, newLoggedUser) {
+			state.loggedUser = newLoggedUser;
+		},
 	},
 	actions: {
 		// Actions can contain asynchronous operations
@@ -41,7 +45,9 @@ const store = createStore({
 		getToken(state) {
 			return state.token;
 		},
-		// ...other getter functions
+		getLoggedUser(state) {
+			return state.loggedUser;
+		},
 	},
 });
 
