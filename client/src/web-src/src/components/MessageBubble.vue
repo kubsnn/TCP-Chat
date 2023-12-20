@@ -35,6 +35,3 @@ export default {
 };
 </script>
 
-<style scoped>
-/* Add Tailwind CSS classes here */
-</style>
