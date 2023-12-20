@@ -12,6 +12,9 @@ import { FwbToast } from 'flowbite-vue';
 import { eventBus } from '@/services/EventBus';
 
 export default {
+    components: {
+        FwbToast
+    },
     data() {
         return {
             toasts: [],
