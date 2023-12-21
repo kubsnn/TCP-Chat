@@ -21,7 +21,8 @@ Server::Server(const char* ip, int port)
     addr_.sin_addr.s_addr = inet_addr(ip);
 
     register_signal(SIGINT, [this](int signum) {
-        logger.warning() << "\nSIGINT has been called. Closing server..." << std::endl;
+        std::cout << '\n';
+        logger.warning() << "SIGINT has been called. Closing server..." << std::endl;
         this->close();
         
         exit(signum);
