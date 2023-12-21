@@ -7,6 +7,7 @@ import time
 import json
 import os
 import threading
+import env
 
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
@@ -14,6 +15,7 @@ from cryptography.hazmat.backends import default_backend
 
 from typing import Callable, Any
 
+APP_NAME = env.get_app_name()
 
 def resolve_to_ip(host) -> str:
     try:
@@ -39,6 +41,7 @@ class Client:
         self.host = resolve_to_ip(host)
         self.port = port
         self.socket = None
+        self.directory = self.__get_app_directory()
         self.private_key, self.public_key = self.__load_or_generate_keys()
         self.server_public_key = None
         self.stop_listener = False
@@ -179,6 +182,11 @@ class Client:
         length = struct.pack('I', len(repr(data)))
 
         try:
+            if self.socket is None:
+                return False
+            if self.server_public_key is None:
+                return False
+
             self.socket.send(length)
             buffer_size = 245
             for i in range(0, len(data), buffer_size):
@@ -193,7 +201,7 @@ class Client:
 
         return True
 
-    def __receive(self) -> dict[str, Any]:
+    def __receive(self) -> dict[str, Any] | None:
         """
         Receives and decrypts data from the server.
 
@@ -218,7 +226,7 @@ class Client:
 
         return json.loads(data.decode('utf-8').rstrip('\0'))
 
-    def __receive_raw(self) -> dict[str, Any]:
+    def __receive_raw(self) -> dict[str, Any] | None:
         """
         Receives raw data from the server.
 
@@ -237,6 +245,29 @@ class Client:
 
         return json.loads(data.decode('utf-8').rstrip('\0'))
 
+    def __get_app_directory(self) -> str:
+        """
+        Gets the application data directory.
+
+        Returns:
+            str: The application data directory.
+        """
+        # Get the user data directory
+        if os.name == 'nt':  # Windows
+            user_data_dir = os.getenv('APPDATA') or ""
+        else:  # Linux and others
+            user_data_dir = os.path.expanduser("~")
+
+        if user_data_dir is None or user_data_dir == "":
+            raise Exception("Could not get user data directory")
+
+        app_data_dir = os.path.join(str(user_data_dir), str(APP_NAME))
+
+        # Ensure the directory exists; if not, create it
+        os.makedirs(app_data_dir, exist_ok=True)
+
+        return app_data_dir
+
     def __load_or_generate_keys(self) -> tuple:
         """
         Loads or generates RSA keys.
@@ -245,7 +276,7 @@ class Client:
             tuple: A tuple containing the private key and the public key.
         """
         # Check if the keys already exist
-        if os.path.isfile('private_key.pem') and os.path.isfile('public_key.pem'):
+        if os.path.isfile(os.path.join(self.directory, 'private_key.pem')) and os.path.isfile(os.path.join(self.directory, 'public_key.pem')):
             return self.__load_keys()
 
         # Generate a new RSA key
@@ -266,15 +297,17 @@ class Client:
         Returns:
             tuple: A tuple containing the private key and the public key.
         """
+        priv_key_path = os.path.join(self.directory, 'private_key.pem')
+        pub_key_path = os.path.join(self.directory, 'public_key.pem')
         # Load the keys from files
-        with open('private_key.pem', 'rb') as f:
+        with open(priv_key_path, 'rb') as f:
             priv_key = serialization.load_pem_private_key(
                 f.read(),
                 password=None,
                 backend=default_backend()
             )
 
-        with open('public_key.pem', 'rb') as f:
+        with open(pub_key_path, 'rb') as f:
             pub_key = serialization.load_pem_public_key(
                 f.read(),
                 backend=default_backend()
@@ -302,11 +335,14 @@ class Client:
             encryption_algorithm=serialization.NoEncryption()
         )
 
+        priv_key_path = os.path.join(self.directory, 'private_key.pem')
+        pub_key_path = os.path.join(self.directory, 'public_key.pem')
+
         # Save the keys to files
-        with open('private_key.pem', 'wb') as f:
+        with open(priv_key_path, 'wb') as f:
             f.write(private_key)
 
-        with open('public_key.pem', 'wb') as f:
+        with open(pub_key_path, 'wb') as f:
             f.write(public_key)
 
 if __name__ == "__main__":

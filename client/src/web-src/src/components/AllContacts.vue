@@ -10,14 +10,16 @@
             @click="openChat(contact)" :outline="contact.name === activeContact">
             <div class="w-full flex flex-nowrap justify-between items-center">
 
-                <span class="grow text-left">{{ contact.name }}</span>
+                <span class="grow text-left pr-1">{{ contact.name }}</span>
+                <font-awesome-icon icon="fa-solid fa-message" v-if="notifications.includes(contact.name)"
+                    class="text-blue-400 text-sm pr-2 fa-shake" />
                 <font-awesome-icon v-if="contact.online" icon="fa-solid fa-plug" class="text-green-400 text-sm" />
                 <font-awesome-icon v-else icon="fa-solid fa-plug" class="text-red-400 text-sm" />
             </div>
         </fwb-button>
     </div>
 
-    <fwb-sidebar-dropdown-item>
+    <fwb-sidebar-dropdown-item @click="refreshInvitations">
         <template #trigger> Invites </template>
         <template #icon>
             <font-awesome-icon class="w-5 h-4" icon="fa-solid fa-envelope" />
@@ -71,23 +73,50 @@ export default {
     },
     emits: {
         'refresh-friends': null,
-        'open-chat': null
+        'open-chat': null,
+        'get-messages': null
     },
     mounted() {
+        eel.expose(
+            this.message_from,
+            'message_from'
+        );
         this.refreshInvitations();
+        setInterval(this.refreshInvitations, 30000);
     },
     data() {
         return {
             pendingInvites: [],
-            isShowModal: false
+            isShowModal: false,
+            notifications: []
         };
     },
     methods: {
+        message_from(contact_name) {
+            if (contact_name === this.activeContact) {
+                this.$emit('get-messages', contact_name)
+            }
+            else {
+                //new message notification
+                if (this.notifications.includes(contact_name)) {
+                    this.notifications.splice(this.notifications.indexOf(contact_name), 1);
+                }
+                this.notifications.push(contact_name);
+                //play notification sound
+                var audio = new Audio('/notification.mp3');
+                audio.play();
+                audio.volume = 0.5;
+            }
+        },
         closeModal() {
             this.isShowModal = false
+            this.refreshInvitations();
+
         },
         showModal() {
             this.isShowModal = true
+            this.refreshInvitations();
+
         },
         handlePendingInvites(response) {
             console.log(response);
@@ -105,7 +134,9 @@ export default {
             await eel.reject_invite(username)(this.refreshInvitations);
         },
         openChat(contact) {
-            console.log(contact);
+            if (this.notifications.includes(contact.name)) {
+                this.notifications.splice(this.notifications.indexOf(contact.name), 1);
+            }
             this.$emit('open-chat', contact.name);
         }
     },

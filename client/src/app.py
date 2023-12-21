@@ -1,10 +1,6 @@
-import dis
-from email import message
-import re
 import eel
 import os
 from api import API
-import threading
 from env import get_host_addr, get_port_no
 import messagesDB
 
@@ -20,7 +16,8 @@ def listener(response):
         messages = connect_to_db(response["to"])
         if messages is not None:
             messages.insert_message(response["from"], response["message"], False)
-            eel.update_messages(messages.get_messages()) # type: ignore
+            eel.message_from(response["from"]) # type: ignore
+            #eel.update_messages(messages.get_messages()) # type: ignore
         else:
             print("No messages DB connected!")
         disconnect_from_db(messages)
@@ -63,9 +60,7 @@ def login_to_server(username, password):
     print(response)
     if response["result"] == "ok":
         messages = connect_to_db(username)
-        if messages is not None:
-            eel.update_messages(messages.get_messages()) # type: ignore
-        else:
+        if messages is  None:
             print("No messages DB connected!")
         disconnect_from_db(messages)
         eel.show_toast("success", "Logged in successfully!", 2000) # type: ignore
@@ -81,9 +76,7 @@ def register_to_server(username, password):
     print(response)
     if response["result"] == "ok":
         messages = connect_to_db(username)
-        if messages is not None:
-            eel.update_messages(messages.get_messages()) # type: ignore
-        else:
+        if messages is None:
             print("No messages DB connected!")
         disconnect_from_db(messages)
 
@@ -101,11 +94,11 @@ def register_to_server(username, password):
         return False
 
 @eel.expose
-def get_all_messages(username):
+def get_messages(username, contact):
     messages = connect_to_db(username)
     if messages is not None:
-        print("Getting all messages...")
-        all_messages = messages.get_messages()
+        print("Getting messages...")
+        all_messages = messages.get_messages(contact)
         disconnect_from_db(messages)
         return all_messages
     else:
@@ -268,7 +261,7 @@ def send_message(sender, recipient, message):
             messages = connect_to_db(sender)
             if messages is not None:
                 messages.insert_message(recipient, message, True)
-                eel.update_messages(messages.get_messages()) # type: ignore
+                eel.update_messages(messages.get_messages(recipient)) # type: ignore
             else:
                 print("No messages DB connected!")
 
