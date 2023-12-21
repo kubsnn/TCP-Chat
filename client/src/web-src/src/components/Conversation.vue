@@ -14,9 +14,10 @@
             <message-bubble v-else :message="'Start Your Conversation'" :isResponder="false" />
         </div>
         <div class="w-full h-16 flex-none flex flex-row flex-nowrap justify-between items-center p-2">
-            <fwb-input class="w-full" placeholder="Type a message..." v-model="currentMessage" ref="input"
+            <fwb-input class="w-full" placeholder="Type a message..." v-model="currentMessage" ref="inputBox"
                 @keyup.enter.exact.stop.prevent="sendMessage" />
-            <fwb-button @click="sendMessage" color="pink" pill class="ml-2">
+            <fwb-button @keyup.enter.exact.stop.prevent="" @click.capture.stop.prevent.self="sendMessage" color="pink" pill
+                class="ml-2">
                 <span class=" flex flex-nowrap ">
                     Send
                     <font-awesome-icon class="w-5 h-4" icon="fa-solid fa-paper-plane" />
@@ -59,11 +60,23 @@ export default {
         }
     },
     methods: {
-        async sendMessage() {
+        async sendMessage(event) {
+            event.preventDefault()
             console.log('send message', this.currentMessage)
+            //if message is empty, do nothing
+            if (this.currentMessage === '') return
+
             await eel.send_message(this.$store.getters.getLoggedUser, this.contact, this.currentMessage)(this.handleResponse);
+            this.currentMessage = ''
+
             //focus on input
-            this.$refs.input.focus()
+            this.$nextTick(() => {
+                const inputRef = this.$refs.inputBox
+                //find input inside this component
+                const input = inputRef.$el.querySelector('input')
+                //focus on input
+                input.focus()
+            });
 
         },
         handleResponse(response) {
