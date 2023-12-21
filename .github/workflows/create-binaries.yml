@@ -184,8 +184,9 @@ jobs:
           ls -la
           ls -la ./dist
 
+      # If the tag is not provided in the input, use the tag from the event
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: ./dist/*
-          name: ${{ github.ref }}
+          name: ${{ github.event.inputs.tag || github.ref_name }}
