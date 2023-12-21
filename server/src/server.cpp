@@ -6,9 +6,12 @@
 #include <cstring>
 #include <iostream>
 #include <thread>
-#include <string>
 #include <algorithm>
 #include <csignal>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 Server::Server(const char* ip, int port) 
     : ip_(ip), port_(port)
@@ -18,10 +21,9 @@ Server::Server(const char* ip, int port)
     addr_.sin_addr.s_addr = inet_addr(ip);
 
     register_signal(SIGINT, [this](int signum) {
-        std::cout << "\n";
-        logger.warning() << "SIGINT has been called. Closing server..." << std::endl;
-        this->onInterrupt(SIGINT);
-        logger.info() << "Sockets closed. Exiting..." << std::endl;
+        logger.warning() << "\nSIGINT has been called. Closing server..." << std::endl;
+        this->close();
+        
         exit(signum);
     });
 
@@ -29,7 +31,9 @@ Server::Server(const char* ip, int port)
 }
 
 Server::~Server() { 
-    close(sockfd_);
+    cache_.disconnectAll();
+
+    ::close(sockfd_);
 }
 
 void Server::run() {
@@ -49,7 +53,7 @@ void Server::run() {
         }
     }
 
-    close(sockfd_);
+    ::close(sockfd_);
 }
 
 Client Server::createClient() const {
@@ -90,12 +94,11 @@ void Server::buildServer() {
     logger.info() << "Listening on " << ip_ << ':' << port_ << std::endl;
 }
 
-void Server::onInterrupt(int signum) {
-    auto clients = cache_.usersOnline();
-    for (auto& client : clients) {
-        client.disconnect();
-    }
+void Server::close() {
+    cache_.disconnectAll();
 
-    close(sockfd_);
+    ::close(sockfd_);
     sockfd_ = -1;
+
+    logger.info() << "Sockets closed. Exiting..." << std::endl;
 }
