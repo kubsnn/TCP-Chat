@@ -20,7 +20,9 @@
     </div>
 
     <fwb-sidebar-dropdown-item @click="refreshInvitations">
-        <template #trigger> Invites </template>
+        <template #trigger> Invites
+            <span v-if="pendingInvites.length > 0" class="text-xs px-2 text-gray-400">({{ pendingInvites.length }})</span>
+        </template>
         <template #icon>
             <font-awesome-icon class="w-5 h-4" icon="fa-solid fa-envelope" />
         </template>
