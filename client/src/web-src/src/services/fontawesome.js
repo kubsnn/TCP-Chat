@@ -16,13 +16,14 @@ import {
 	faCheck,
 	faXmark,
 	faPlug,
+	faMessage,
 } from "@fortawesome/free-solid-svg-icons";
 
 /* add icons to the library */
 
 const fontawesome = {
 	install() {
-		library.add(faPlus, faRightToBracket, faArrowLeft, faSpinner, faRightFromBracket, faPaperPlane, faSearch, faUserPlus, faUserMinus, faEnvelope, faCheck, faXmark, faPlug);
+		library.add(faPlus, faRightToBracket, faArrowLeft, faSpinner, faRightFromBracket, faPaperPlane, faSearch, faUserPlus, faUserMinus, faEnvelope, faCheck, faXmark, faPlug, faMessage);
 	},
 };
 
