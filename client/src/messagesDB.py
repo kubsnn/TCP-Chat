@@ -2,16 +2,29 @@ from math import e
 import re
 import sqlite3
 import os
+import hashlib
+import env
 
-APP_NAME = "TCP-Chat"
+APP_NAME = env.APP_NAME
 
 class MessagesDB:
     def __init__(self, username):
-        self.database = os.path.join(self.get_user_directory(), "chat_" + str(username) + ".db")
+        self.username_hash = self.hash_username(username, "messages_")
+
+        self.database = os.path.join(self.get_user_directory(), self.username_hash + ".db")
         self.conn = sqlite3.connect(self.database, timeout=10)
         self.c = self.conn.cursor()
 
         self.init_table()
+
+    def hash_username(self, username, salt) -> str:
+        salted_username = salt + username
+        sha256 = hashlib.sha256()
+        sha256.update(salted_username.encode('utf-8'))
+        hashed_username = sha256.hexdigest()
+        return hashed_username
+
+
 
     def get_user_directory(self):
 
@@ -59,23 +72,31 @@ class MessagesDB:
             return False
 
     def insert_message(self, contact, message, am_i_sender):
+        hashed_contact = self.hash_username(contact, self.username_hash)
         try:
-            print("Add message:",contact, message, am_i_sender)
             if self.c is not None and self.conn is not None:
-                self.c.execute("INSERT INTO messages (username, message, am_i_sender) VALUES (?, ?, ?)", (contact, message, am_i_sender))
+                #get last id
+                self.c.execute("SELECT id FROM messages ORDER BY id DESC LIMIT 1")
+                last_id = self.c.fetchone()
+                if last_id is None:
+                    last_id = 0
+                else:
+                    last_id = last_id[0]
+
+                #hashed_contact = self.hash_username(contact, self.username_hash + str(last_id))
+
+                self.c.execute("INSERT INTO messages (username, message, am_i_sender) VALUES (?, ?, ?)", (hashed_contact, message, am_i_sender,))
                 self.conn.commit()
                 return True
         except Exception as e:
             print(e)
             return False
 
-    def get_messages(self, recipient = None):
+    def get_messages(self, recipient):
         try:
             if self.c is not None and self.conn is not None:
-                if recipient is None:
-                    self.c.execute("SELECT * FROM messages ORDER BY timestamp ASC")
-                else:
-                    self.c.execute("SELECT * FROM messages WHERE username = ? ORDER BY timestamp ASC", (recipient,))
+                hashed_recipient = self.hash_username(recipient, self.username_hash)
+                self.c.execute("SELECT * FROM messages WHERE username = ? ORDER BY timestamp ASC", (str(hashed_recipient),))
                 return self.c.fetchall()
         except Exception as e:
             print(e)

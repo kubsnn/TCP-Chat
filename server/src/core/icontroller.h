@@ -14,7 +14,9 @@ class IController {
     using map = jaszyk::flatmap<T1, T2>;
 public:
     friend class ClientHandler;
-    
+
+    virtual ~IController() = default;
+
     bool hasMethod(const std::string& method) const;
     virtual json invoke(const std::string& method, const json& data) const;
     

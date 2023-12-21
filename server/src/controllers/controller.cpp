@@ -6,42 +6,42 @@ Controller::Controller(Client& client, Cache& cache)
     : client_(client), cache_(cache)
 { 
     addMethod("sendto", [this](const json& data) {
-        if (!verifySendToRequest(data)) return fail("invalid request format");
+        if (!verifySendToRequest(data)) return invalid_format_;
         return this->sendTo(data);
     });
     addMethod("usersOnline", [this](const json& data) {
-        if (!verifyUsersOnlineRequest(data)) return fail("invalid request format");
+        if (!verifyUsersOnlineRequest(data)) return invalid_format_;
         return this->usersOnline(data);
     });
     addMethod("search", [this](const json& data) {
-        if (!verifySearchRequest(data)) return fail("invalid request format");
+        if (!verifySearchRequest(data)) return invalid_format_;
         return this->search(data);
     });
     addMethod("invite", [this](const json& data) {
-        if (!verifyAddFriendRequest(data)) return fail("invalid request format");
+        if (!verifyAddFriendRequest(data)) return invalid_format_;
         return this->addFriend(data);
     });
     addMethod("friends", [this](const json& data) {
-        if (!verifyGetFriendsRequest(data)) return fail("invalid request format");
+        if (!verifyGetFriendsRequest(data)) return invalid_format_;
         return this->getFriends(data);
     });
     addMethod("accept", [this](const json& data) {
-        if (!verifyAcceptInvitationRequest(data)) return fail("invalid request format");
+        if (!verifyAcceptInvitationRequest(data)) return invalid_format_;
         return this->acceptInvitation(data);
     });
     addMethod("invitations", [this](const json& data) {
-        if (!verifyGetInvitationsRequest(data)) return fail("invalid request format");
+        if (!verifyGetInvitationsRequest(data)) return invalid_format_;
         return this->getInvitations(data);
     });
     addMethod("removeFriend", [this](const json& data) {
-        if (!verifyRemoveFriendRequest(data)) return fail("invalid request format");
+        if (!verifyRemoveFriendRequest(data)) return invalid_format_;
         return this->removeFriend(data);
     });
 }
 
 json Controller::invoke(const std::string& method, const json& data) const {
     if (!client_.logged()) {
-        return fail("you are not logged in");
+        return fail("You must be logged in!");
     }
 
     return IController::invoke(method, data);
@@ -51,12 +51,12 @@ json Controller::sendTo(const json& data) const {
     const auto& receiver_name = data["who"].get<std::string>();
     
     if (!cache_.isUserOnline(receiver_name)) {
-        return fail("user is offline");
+        return fail("User is offline.");
     }
 
     UserDbHandle db;
     if (!db.isFriend(client_.username(), receiver_name)) {
-        return fail("you are not friends");
+        return fail("You are not friends.");
     }
     
     json message = {
@@ -108,7 +108,7 @@ json Controller::addFriend(const json& data) const {
 
     UserDbHandle db;
     if (!db.exists(friend_name)) {
-        return fail("user doesn't exist");
+        return fail("User doesn't exist.");
     }
 
     auto user = db.getByName(client_.username());
@@ -116,12 +116,12 @@ json Controller::addFriend(const json& data) const {
 
     for (const auto& inv : invitations) {
         if (inv.username() == friend_name) {
-            return fail("you are already invited");
+            return fail("You are already invited.");
         }
     }
 
     if (!db.addFriend(user.id(), friend_name)) {
-        return fail("already friends");
+        return fail("You are already friends!");
     }
 
     return ok();
@@ -151,12 +151,12 @@ json Controller::acceptInvitation(const json& data) const {
 
     UserDbHandle db;
     if (!db.exists(friend_name)) {
-        return fail("user doesn't exist");
+        return fail("User does not exist.");
     }
 
     auto user = db.getByName(client_.username());
     if (!db.acceptInvitation(user.id(), friend_name)) {
-        return fail("already friends");
+        return fail("You are already friends!");
     }
 
     return ok();
@@ -185,11 +185,11 @@ json Controller::removeFriend(const json& data) const {
     UserDbHandle db;
     
     if (!db.exists(friend_name)) {
-        return fail("friend to remove doesn't exist");
+        return fail("Friend does not exist.");
     }
 
     if (!db.isFriend(client_.username(), friend_name)) {
-        return fail("you are not friends");
+        return fail("You are not friends.");
     }
 
     auto user = db.getByName(client_.username());

@@ -1,76 +1,26 @@
-# Server Documentation
+# Chatter
 
-This documentation provides information about the available requests for the TCP Chat server. Each request must be in JSON format.
+[![CI/ServerTests](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci_tests.yml/badge.svg)](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci_tests.yml)
+[![CI/ServerBuild](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci.yml/badge.svg)](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci.yml)
 
-## Data Format Requirements
+## Overview
 
-To send JSON data to the server, the client must adhere to the following format:
+Welcome to Chatter, a user-friendly and secure messaging application designed for seamless communication. Chatter facilitates easy and engaging conversations with a clean and modern interface. Whether you're connecting with friends, colleagues, or loved ones, Chatter provides a reliable platform for all your messaging needs.
 
-1. **Data Length:** First, the client should write 4 bytes (an integer) that represents the length of the parsed JSON as a string.
+## Features
 
-2. **Parsed JSON:** Following the data length, the client should send the parsed JSON data.
+- **Secure Messaging:** Chatter ensures the privacy of your conversations with end-to-end encryption.
+- **User-Friendly Interface:** The clean and modern  VUE-based UI makes chatting a breeze.
+- **Efficient Communication:** Stay connected with friends and colleagues effortlessly.
+- **Chatter Search:** Easily find and connect with people in the Chatter network.
+- **Lightweight and Fast:** Chatter is optimized for performance and responsiveness.
 
-If data length is suspiciously big (n > 65536) server ignores all bytes
+### Usage
 
-## Register Request
+Download the latest release from the [Releases](https://github.com/kubsnn/TCP-Chat/releases) page :)
 
-To register a new user, send a JSON request to the server with the following format:
+### Other features
 
-```json
-{
-  "action": "register",
-  "creds": {
-    "username": "<USERNAME>",
-    "password": "<PASSWORDHASH>"
-  }
-}
-```
-
-* "action" must be set to "register".
-* "creds" should contain the user's credentials with "username" and "password" fields.
-
-
-## Register Response
-The server will respond with a JSON object in the following format:
-
-```json
-{
-  "response": true,
-  "result": "ok or fail",
-  "message": "failure reason" (optional)
-}
-```
-* "response" will be true to indicate a response.
-* "result" will be set to "ok" if the registration is successful or "fail" in case of an error.
-* "message" (optional) will provide a failure reason in case of registration failure.
-
-
-## Login Request
-To log in, send a JSON request to the server with the following format:
-
-```json
-{
-  "action": "login",
-  "creds": {
-    "username": "<USERNAME>",
-    "password": "<PASSWORDHASH>"
-  }
-}
-```
-* "action" must be set to "login".
-* "creds" should contain the user's credentials with "username" and "password" fields.
-
-  
-## Login Response
-The server will respond with a JSON object in the same format as the register response:
-
-```json
-{
-  "response": true,
-  "result": "ok or fail",
-  "message": "failure reason" (optional)
-}
-```
-* "response" will be true to indicate a response.
-* "result" will be set to "ok" if the login is successful or "fail" in case of an error.
-* "message" (optional) will provide a failure reason in case of a login failure.
+- **SQLite3 Database:** User data, including hashed passwords with random salts, is securely stored.
+- **Efficient Memory Usage:** The server is optimized for minimal memory consumption, providing a lightweight solution.
+- **Unicode Support:** Embrace diversity with support for Unicode in usernames and messages.

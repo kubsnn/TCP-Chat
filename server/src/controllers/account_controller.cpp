@@ -14,7 +14,7 @@ AccountController::AccountController(Client& client, Cache& cache)
         return this->signin(data);
     });
     addMethod("logout", [this](const json& data) {
-        if (!verifySignoutRequest(data)) return fail("you are not logged in");
+        if (!verifySignoutRequest(data)) return fail("You are not logged in.");
         return this->signout(data);
     });
 }
@@ -27,7 +27,7 @@ json AccountController::signup(const json& data) const {
 
     UserDbHandle db;
     if (db.exists(username)) {
-        return fail("username is taken");
+        return fail("Username is taken.");
     }
     auto salt = Crypto::salt();
     auto hashed = hash({ username, password, salt });
@@ -47,25 +47,27 @@ json AccountController::signin(const json& data) const {
 
     UserDbHandle db;
     if (!db.exists(username)) {
-        return fail("username doesn't exist");
+        return fail("This username doesn't exist.");
     }
 
     auto user = db.getByName(username);
     if (user.passwordHash() != hash({ username, password, user.salt() })) {
-        return fail("invalid password");
+        return fail("Invalid password.");
     }
 
     if (cache_.isUserOnline(username)) {
-        return fail("you are already logged in");
+        return fail("You are already logged in.");
     }
 
     if (client_.logged()) {
-        return fail("you are already logged in; logout first");
+        return fail("You are already logged in. Logout first.");
     }
 
     client_.setUsername(username);
 
     cache_.addUserOnline(client_);
+
+    logger.info() << "User from socket " << client_.socket().fd() << " logged in as `" << username << "`." << std::endl;
 
     return ok();
 }
@@ -73,6 +75,9 @@ json AccountController::signin(const json& data) const {
 // logout user method
 json AccountController::signout(const json& data) const {
     cache_.removeUserOnline(client_.username());
+
+    logger.info() << '`' << client_.username() << "` logged out." << std::endl;
+
     client_.setUsername("");
 
     return ok();

@@ -2,17 +2,10 @@
 #ifndef __SERVER_H__
 #define __SERVER_H__
 
-#include "core/database/user_db_handle.h"
 #include "core/client.h"
-#include "core/socket.h"
 #include "core/cache.h"
-
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-
+#include <string>
 
 class Server {
 public:
@@ -24,7 +17,7 @@ public:
 private:
     Client createClient() const;
     void buildServer();
-    void onInterrupt(int signum);
+    void close();
 
     Cache cache_;
     std::string ip_;
