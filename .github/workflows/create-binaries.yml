@@ -85,7 +85,9 @@ jobs:
         run: |
           if [ ! -n "$(ls -A task/* 2>/dev/null)" ]; then
             echo "Download Taskfile for ${{ matrix.os }}"
-            mkdir task 2>/dev/null
+            if [ ! -d "task" ]; then
+              mkdir task
+            fi
             if  [ "$RUNNER_OS" == "Windows" ]; then
               curl -L -o taskfile.zip https://github.com/go-task/task/releases/download/v3.31.0/task_windows_amd64.zip
               unzip -q taskfile.zip -d task
