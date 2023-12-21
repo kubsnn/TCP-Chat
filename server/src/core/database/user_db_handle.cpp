@@ -315,7 +315,6 @@ bool UserDbHandle::isInvitedBy(int id, int friend_id) const {
     sqlite3_finalize(stmt);
 
     return false;
-    
 }
 
 void UserDbHandle::addFriendForce(int id, int friend_id) const {

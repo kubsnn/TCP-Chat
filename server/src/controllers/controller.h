@@ -32,6 +32,7 @@ private:
     bool verifyGetInvitationsRequest(const json& data) const;
     bool verifyRemoveFriendRequest(const json& data) const;
     
+    const json invalid_format_ = fail("invalid request format");
     Client& client_;
     Cache& cache_;
 };
