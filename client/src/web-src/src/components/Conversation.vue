@@ -14,8 +14,9 @@
             <message-bubble v-else :message="'Start Your Conversation'" :isResponder="false" />
         </div>
         <div class="w-full h-16 flex-none flex flex-row flex-nowrap justify-between items-center p-2">
-            <fwb-input class="w-full" placeholder="Type a message..." v-model="currentMessage" />
-            <fwb-button @click="sendMessage()" color="pink" pill class="ml-2">
+            <fwb-input class="w-full" placeholder="Type a message..." v-model="currentMessage" ref="input"
+                @keyup.enter.exact.stop.prevent="sendMessage" />
+            <fwb-button @click="sendMessage" color="pink" pill class="ml-2">
                 <span class=" flex flex-nowrap ">
                     Send
                     <font-awesome-icon class="w-5 h-4" icon="fa-solid fa-paper-plane" />
@@ -61,6 +62,9 @@ export default {
         async sendMessage() {
             console.log('send message', this.currentMessage)
             await eel.send_message(this.$store.getters.getLoggedUser, this.contact, this.currentMessage)(this.handleResponse);
+            //focus on input
+            this.$refs.input.focus()
+
         },
         handleResponse(response) {
             console.log(response)
