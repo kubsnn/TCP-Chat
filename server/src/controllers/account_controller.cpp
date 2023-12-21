@@ -67,7 +67,7 @@ json AccountController::signin(const json& data) const {
 
     cache_.addUserOnline(client_);
 
-    logger.info() << "User from socket " << client_.socket().fd() << " logged in as " << username << '.' << std::endl;
+    logger.info() << "User from socket " << client_.socket().fd() << " logged in as `" << username << "`." << std::endl;
 
     return ok();
 }
@@ -76,7 +76,7 @@ json AccountController::signin(const json& data) const {
 json AccountController::signout(const json& data) const {
     cache_.removeUserOnline(client_.username());
 
-    logger.info() << client_.username() << " logged out." << std::endl;
+    logger.info() << '`' << client_.username() << "` logged out." << std::endl;
 
     client_.setUsername("");
 

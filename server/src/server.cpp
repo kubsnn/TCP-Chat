@@ -28,7 +28,7 @@ Server::Server(const char* ip, int port)
         exit(signum);
     });
 
-    logger.info() << "Starting in " << globals::executable_dir << '.' << std::endl;
+    logger.info() << "Starting in `" << globals::executable_dir.string() << "`." << std::endl;
 }
 
 Server::~Server() { 
