@@ -2,7 +2,6 @@
 
 [![CI/ServerTests](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci_tests.yml/badge.svg)](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci_tests.yml)
 [![CI/ServerBuild](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci.yml/badge.svg)](https://github.com/kubsnn/TCP-Chat/actions/workflows/ci.yml)
-[![CI/ServerBuild](https://github.com/kubsnn/TCP-Chat/actions/workflows/create-binaries.yml/badge.svg)](https://github.com/kubsnn/TCP-Chat/actions/workflows/create-binaries.yml)
 
 ## Overview
 
