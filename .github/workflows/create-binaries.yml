@@ -192,4 +192,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ./dist/*
-          name: ${{ github.ref }}
+          name: ${{ github.event.inputs.tag || github.ref_name }}
