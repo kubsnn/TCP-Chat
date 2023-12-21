@@ -22,7 +22,8 @@ public:
     Client getUser(const std::string& username);
 
     std::vector<Client> usersOnline();
- 
+
+    void disconnectAll();
 private:
     std::unordered_map<std::string, Client> users_online_;
     std::shared_mutex users_online_mutex_;

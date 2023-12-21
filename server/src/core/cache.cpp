@@ -36,3 +36,10 @@ std::vector<Client> Cache::usersOnline() {
 
     return users;
 }
+
+void Cache::disconnectAll() {
+    std::unique_lock<std::shared_mutex> lock(users_online_mutex_);
+    for (auto& [_, client] : users_online_) {
+        client.disconnect();
+    }
+}
