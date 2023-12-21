@@ -83,7 +83,7 @@ jobs:
 
       - name: Download Task executable for ${{ matrix.os }}
         run: |
-          if [ ! -d "task" ]; then
+           if [ ! -n "$(ls -A task/* 2>/dev/null)" ]; then
             echo "Download Taskfile for ${{ matrix.os }}"
             mkdir task
             if  [ "$RUNNER_OS" == "Windows" ]; then
