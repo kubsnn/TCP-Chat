@@ -140,7 +140,7 @@ def register_to_server(username, password):
         return False
 
 @eel.expose
-def get_all_messages(username, contact):
+def get_messages(username, contact):
     """
     This function retrieves all messages for a given username from a database and
     returns them as a list.

@@ -49,17 +49,17 @@ class API:
         self.onMessage = onMessage
 
     def connect(self) -> bool:
-            """
-            Connects to the server.
+        """
+        Connects to the server.
 
-            :return: True if the connection is successful, False otherwise.
-            :rtype: bool
-            """
+        :return: True if the connection is successful, False otherwise.
+        :rtype: bool
+        """
 
-            if self.client.connect():
-                self.client.set_listener(self.__handleResponse)
-                return True
-            return False
+        if self.client.connect():
+            self.client.set_listener(self.__handleResponse)
+            return True
+        return False
 
     def close(self):
         """
@@ -139,20 +139,20 @@ class API:
         return response
 
     def getOnlineUsers(self) -> dict[str, Any]:
-            """
-            Sends a request to the server to get a list of online users.
+        """
+        Sends a request to the server to get a list of online users.
 
-            :return: The response from the server.
-            :rtype: dict[str, Any]
-            """
+        :return: The response from the server.
+        :rtype: dict[str, Any]
+        """
 
-            request = {"action" : "usersOnline"}
-            self.client.send(json.dumps(request))
-            response = self.__getResponse("usersOnline")
-            if response != None and "values" in response:
-                response["values"] = [self.__decode_utf8(username) for username in response["values"]]
+        request = {"action" : "usersOnline"}
+        self.client.send(json.dumps(request))
+        response = self.__getResponse("usersOnline")
+        if response != None and "values" in response:
+            response["values"] = [self.__decode_utf8(username) for username in response["values"]]
 
-            return response
+        return response
 
     def invite(self, username: str) -> dict[str, Any]:
         """
@@ -183,20 +183,21 @@ class API:
         return self.__getResponse("accept")
 
     def send(self, receiver: str, message: str) -> dict[str, Any]:
-            """
-            Sends a message to the specified receiver.
+        """
+        Sends a message to the specified receiver.
 
-            Args:
-                receiver (str): The username of the receiver.
-                message (str): The message to send.
+        :param receiver: The username of the receiver.
+        :type receiver: str
+        :param message: The message to send.
+        :type message: str
 
-            Returns:
-                json: The response from the server.
-            """
+        :return: The response from the server.
+        :rtype: dict[str, Any]
+        """
 
-            request = {"action" : "sendto", "who" : self.__encode_utf8(receiver), "message" : self.__encode_utf8(message) }
-            self.client.send(json.dumps(request))
-            return self.__getResponse("sendto")
+        request = {"action" : "sendto", "who" : self.__encode_utf8(receiver), "message" : self.__encode_utf8(message) }
+        self.client.send(json.dumps(request))
+        return self.__getResponse("sendto")
 
     def invitations(self) -> dict[str, Any]:
         """
