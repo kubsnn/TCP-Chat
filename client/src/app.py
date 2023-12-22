@@ -84,14 +84,16 @@ def connect_to_server():
 @eel.expose
 def login_to_server(username, password):
     """
+
     The `login_to_server` function logs a user into a server using a provided username and password, and
     performs additional actions based on the server's response.
 
     :param username: The username parameter is the username of the user trying to log in to the server
     :param password: The password parameter is the password that the user enters to log in to the server
-    :return: a boolean value. If the login is successful, it returns True. If the login fails, it
-    returns False.
+    :return: a boolean value. If the login is successful, it returns True. If the login fails, it returns False.
+
     """
+
     global api
     response = api.login(username, password)
     print(response)
