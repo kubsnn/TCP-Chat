@@ -1,4 +1,0 @@
-pytest==7.4.3
-sphinx==7.2.6
-pyinstaller==6.1.0
--r ./src/requirements.txt

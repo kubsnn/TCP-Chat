@@ -1,4 +1,0 @@
-Development
-===========
-
-.. include:: ../../README.md
