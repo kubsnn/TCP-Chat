@@ -4,7 +4,8 @@
             <fwb-tabs v-model="activeTab" class="p-5" color="pink">
                 <fwb-tab name="contacts" title="Contacts">
                     <AllContacts :contacts="contacts" :friends="friends" :onlineUsers="onlineUsers"
-                        :activeContact="activeContact" @refresh-friends="refreshFriends" @open-chat="setActiveContact" />
+                        :activeContact="activeContact" @refresh-friends="refreshFriends" @open-chat="setActiveContact"
+                        @get-messages="receive_new_message" />
                 </fwb-tab>
                 <fwb-tab name="settings" title="Settings">
                     <HamburgerMenu />
@@ -98,32 +99,30 @@ export default {
             console.log("Setting active contact to: ", contact);
             this.refreshFriends();
             this.activeContact = contact;
-            eel.get_all_messages(this.username)(this.update_messages);
+            eel.get_messages(this.username, this.activeContact)(this.update_messages);
+        },
+
+        receive_new_message(contact) {
+            eel.get_messages(this.username, contact)(this.update_messages);
         },
 
         update_messages(messages) {
-            console.log("Updating messages");
-            console.log(messages);
-
-            const mappedMessages = messages.reduce((acc, message) => {
-                if (message[1] === this.activeContact) {
-                    acc.push({
-                        id: message[0],
-                        message: message[2],
-                        isResponder: message[3] === 0,
-                        timestamp: message[4],
-                    });
-                }
-                return acc;
-            }, []
-            );
 
             //reverse array to show newest messages at the bottom
+            const mappedMessages = messages.map((message) => {
+                return {
+                    id: message[0],
+                    message: message[2],
+                    isResponder: message[3] === 0,
+                    timestamp: message[4],
+                }
+            });
+
             mappedMessages.reverse();
             console.log("Mapped messages: ", mappedMessages);
             this.refreshFriends();
 
-            this.messages = mappedMessages;
+            this.messages = mappedMessages
         }
     },
     beforeMount() {
@@ -137,7 +136,6 @@ export default {
     mounted() {
         console.log("Logged in as: ", this.username);
         this.refreshFriends();
-        eel.get_all_messages(this.username)(this.update_messages);
 
         //refresh online status every 60 sec
         setInterval(() => {

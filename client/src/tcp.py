@@ -7,6 +7,7 @@ import time
 import json
 import os
 import threading
+import env
 
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
@@ -14,8 +15,18 @@ from cryptography.hazmat.backends import default_backend
 
 from typing import Callable, Any
 
+APP_NAME = env.get_app_name()
 
 def resolve_to_ip(host) -> str:
+    """
+    Resolves a hostname to an IP address.
+
+    :param: host  The hostname to resolve.
+    :type: host: str
+
+    :return: The IP address of the hostname.
+    :rtype: str
+    """
     try:
         # Check if the provided input is already an IP address
         ipaddress.ip_address(host)
@@ -27,18 +38,28 @@ def resolve_to_ip(host) -> str:
         except socket.gaierror:
             return ""  # Unable to resolve the hostname
 
+
 class Client:
+    """
+    Represents a client that connects to a server using TCP/IP protocol.
+
+    """
+
     def __init__(self, host: str, port: int):
         """
         Initializes a new instance of the Client class.
 
-        Args:
-            host (str): The hostname or IP address of the server.
-            port (int): The port number to connect to.
+        :param: host  The hostname or IP address of the server.
+        :type: host: str
+
+        :param: port  The port number to connect to.
+        :type: port: int
+
         """
         self.host = resolve_to_ip(host)
         self.port = port
         self.socket = None
+        self.directory = self.__get_app_directory()
         self.private_key, self.public_key = self.__load_or_generate_keys()
         self.server_public_key = None
         self.stop_listener = False
@@ -47,8 +68,8 @@ class Client:
         """
         Connects to the server.
 
-        Returns:
-            bool: True if the connection is successful, False otherwise.
+        :returns: The IP address of the hostname.
+        :rtype: bool
         """
         return self.__initialize_connection(resolve_to_ip(self.host), self.port)
 
@@ -56,14 +77,23 @@ class Client:
         """
         Sets the listener callback function to handle received data.
 
-        Args:
-            callback (callable(dict)): The callback function to handle received data.
+        :param: callback  The callback function to handle received data.
+        :type: callback: Callable
         """
+
         def listener():
+            """
+            Listens for incoming data and calls the provided callback function.
+
+            This function continuously listens for incoming data until the `stop_listener` flag is set to True.
+            When data is received, it is passed to the provided callback function.
+
+            :return: None
+            """
             print("Listening...")
             while not self.stop_listener:
                 data = self.__receive()
-                if data is None: # connection closed
+                if data is None:  # connection closed
                     break
                 callback(data)
 
@@ -72,6 +102,11 @@ class Client:
         self.listener_thread.start()
 
     def exit(self):
+        """
+        Closes the connection and stops the listener thread.
+
+        :return: None
+        """
         try:
             if self.socket is None:
                 return
@@ -88,17 +123,18 @@ class Client:
         """
         Sends data to the server.
 
-        Args:
-            data (str): The data to send.
-
-        Returns:
-            bool: True if the data is sent successfully, False otherwise.
+        :param data: The data to send.
+        :type data: str
+        :return: True if the data is sent successfully, False otherwise.
+        :rtype: bool
         """
         return bool(self.__send(data))
 
     def close(self) -> None:
         """
         Closes the connection to the server.
+
+        :return: None
         """
         if self.socket is not None:
             self.socket.close()
@@ -107,25 +143,27 @@ class Client:
         """
         Encodes a string using UTF-8 and escapes special characters.
 
-        Args:
-            string (str): The string to encode.
-
-        Returns:
-            str: The encoded string.
+        :param string: The string to encode.
+        :type string: str
+        :return: The encoded string.
+        :rtype: str
         """
         return repr(string.encode('utf-8')[1:].decode('unicode_escape'))[1:-1]
 
-# private:
+    # private:
     def __initialize_connection(self, host: str, port: int) -> bool:
         """
         Initializes the connection to the server.
 
-        Args:
-            host (str): The hostname or IP address of the server.
-            port (int): The port number to connect to.
+        :param host: The hostname or IP address of the server.
+        :type host: str
 
-        Returns:
-            bool: True if the connection is successful, False otherwise.
+        :param port: The port number to connect to.
+        :type host: str
+
+        :return: True if the connection is established successfully, False otherwise.
+        :rtype: bool
+
         """
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -139,8 +177,8 @@ class Client:
         """
         Exchanges public keys with the server.
 
-        Returns:
-            bool: True if the public keys are exchanged successfully, False otherwise.
+        :return: True if the public keys are exchanged successfully, False otherwise.
+        :rtype: bool
         """
         data = self.__receive_raw()
         if data is None:
@@ -168,17 +206,21 @@ class Client:
         """
         Sends encrypted data to the server.
 
-        Args:
-            data (str): The data to send.
-
-        Returns:
-            bool: True if the data is sent successfully, False otherwise.
+        :param msg: The data to send.
+        :type msg: str
+        :return: True if the data is sent successfully, False otherwise.
+        :rtype: bool
         """
 
         data = msg.encode('utf-8')
         length = struct.pack('I', len(repr(data)))
 
         try:
+            if self.socket is None:
+                return False
+            if self.server_public_key is None:
+                return False
+
             self.socket.send(length)
             buffer_size = 245
             for i in range(0, len(data), buffer_size):
@@ -193,12 +235,12 @@ class Client:
 
         return True
 
-    def __receive(self) -> dict[str, Any]:
+    def __receive(self) -> dict[str, Any] | None:
         """
         Receives and decrypts data from the server.
 
-        Returns:
-            dict: The received data as a dictionary.
+        :return: None if the connection is closed, otherwise the received data.
+        :rtype: dict[str, Any]  | None
         """
         if self.socket is None:
             return None
@@ -218,12 +260,12 @@ class Client:
 
         return json.loads(data.decode('utf-8').rstrip('\0'))
 
-    def __receive_raw(self) -> dict[str, Any]:
+    def __receive_raw(self) -> dict[str, Any] | None:
         """
         Receives raw data from the server.
 
-        Returns:
-            dict: The received data as a dictionary.
+        :return: None if the connection is closed, otherwise the received data.
+        :rtype: dict[str, Any] | None
         """
         if self.socket is None:
             return None
@@ -237,15 +279,38 @@ class Client:
 
         return json.loads(data.decode('utf-8').rstrip('\0'))
 
+    def __get_app_directory(self) -> str:
+        """
+        Gets the application data directory.
+
+        Returns:
+            str: The application data directory.
+        """
+        # Get the user data directory
+        if os.name == 'nt':  # Windows
+            user_data_dir = os.getenv('APPDATA') or ""
+        else:  # Linux and others
+            user_data_dir = os.path.expanduser("~")
+
+        if user_data_dir is None or user_data_dir == "":
+            raise Exception("Could not get user data directory")
+
+        app_data_dir = os.path.join(str(user_data_dir), str(APP_NAME))
+
+        # Ensure the directory exists; if not, create it
+        os.makedirs(app_data_dir, exist_ok=True)
+
+        return app_data_dir
+
     def __load_or_generate_keys(self) -> tuple:
         """
         Loads or generates RSA keys.
 
-        Returns:
-            tuple: A tuple containing the private key and the public key.
+        :return: A tuple containing the private key and the public key.
+        :rtype: tuple
         """
         # Check if the keys already exist
-        if os.path.isfile('private_key.pem') and os.path.isfile('public_key.pem'):
+        if os.path.isfile(os.path.join(self.directory, 'private_key.pem')) and os.path.isfile(os.path.join(self.directory, 'public_key.pem')):
             return self.__load_keys()
 
         # Generate a new RSA key
@@ -263,18 +328,20 @@ class Client:
         """
         Loads RSA keys from files.
 
-        Returns:
-            tuple: A tuple containing the private key and the public key.
+        :return: A tuple containing the private key and the public key.
+        :rtype: tuple
         """
+        priv_key_path = os.path.join(self.directory, 'private_key.pem')
+        pub_key_path = os.path.join(self.directory, 'public_key.pem')
         # Load the keys from files
-        with open('private_key.pem', 'rb') as f:
+        with open(priv_key_path, 'rb') as f:
             priv_key = serialization.load_pem_private_key(
                 f.read(),
                 password=None,
                 backend=default_backend()
             )
 
-        with open('public_key.pem', 'rb') as f:
+        with open(pub_key_path, 'rb') as f:
             pub_key = serialization.load_pem_public_key(
                 f.read(),
                 backend=default_backend()
@@ -286,8 +353,8 @@ class Client:
         """
         Writes RSA keys to files.
 
-        Args:
-            key: The RSA key to write.
+        :param key: The RSA key to write.
+        :type key: object
         """
         # Get the public key in PKCS1 format
         public_key = key.public_key().public_bytes(
@@ -302,12 +369,16 @@ class Client:
             encryption_algorithm=serialization.NoEncryption()
         )
 
+        priv_key_path = os.path.join(self.directory, 'private_key.pem')
+        pub_key_path = os.path.join(self.directory, 'public_key.pem')
+
         # Save the keys to files
-        with open('private_key.pem', 'wb') as f:
+        with open(priv_key_path, 'wb') as f:
             f.write(private_key)
 
-        with open('public_key.pem', 'wb') as f:
+        with open(pub_key_path, 'wb') as f:
             f.write(public_key)
+
 
 if __name__ == "__main__":
     host = '127.0.0.1'  # Listen on all available network interfaces
