@@ -37,7 +37,13 @@ cd client
 
 ```sh
 task install
+```
+
+```sh
 task build
+```
+
+```sh
 task run
 ```
 

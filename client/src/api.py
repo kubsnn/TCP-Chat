@@ -4,7 +4,6 @@ import json
 import time
 from typing import Any, Callable
 
-
 """
 API Class Methods:
 
@@ -28,16 +27,21 @@ remove()            | Sends a request to the server to remove a friend.
                     |
 send()              | Sends a message to the specified receiver.
 """
+
+
 class API:
     def __init__(self, host: str, port: int, onMessage: Callable):
         """
-        Initializes a API object.
+        Initializes an API object.
 
-        Args:
-            host (str): The host address to connect to.
-            port (int): The port number to connect to.
-            onMessage (Callable): The callback function to handle incoming messages.
+        :param host: The host address to connect to.
+        :type host: str
+        :param port: The port number to connect to.
+        :type port: int
+        :param onMessage: The callback function to handle incoming messages.
+        :type onMessage: Callable
         """
+
         self.client = tcp.Client(host, port)
         self.responses = {}
         self.lock = rwlock.RWLockWrite()
@@ -48,9 +52,10 @@ class API:
         """
         Connects to the server.
 
-        Returns:
-            bool: True if the connection is successful, False otherwise.
+        :return: True if the connection is successful, False otherwise.
+        :rtype: bool
         """
+
         if self.client.connect():
             self.client.set_listener(self.__handleResponse)
             return True
@@ -59,7 +64,10 @@ class API:
     def close(self):
         """
         Closes the connection with the server.
+
+        :return: None
         """
+
         if self.closed:
             return
         self.client.exit()
@@ -69,13 +77,15 @@ class API:
         """
         Sends a registration request to the server with the provided username and password.
 
-        Args:
-            username (str): The username to register.
-            password (str): The password for the user.
+        :param username: The username to register.
+        :type username: str
+        :param password: The password for the user.
+        :type password: str
 
-        Returns:
-            json: The response from the server.
+        :return: The response from the server.
+        :rtype: dict[str, Any]
         """
+
         request = {"action" : "register", "creds": {"username" : self.__encode_utf8(username), "password" : password}}
         self.client.send(json.dumps(request))
         return self.__getResponse("register")
@@ -84,13 +94,15 @@ class API:
         """
         Sends a login request to the server with the provided username and password.
 
-        Args:
-            username (str): The username to login.
-            password (str): The password for the user.
+        :param username: The username to login.
+        :type username: str
+        :param password: The password for the user.
+        :type password: str
 
-        Returns:
-            json: The response from the server.
+        :return: The response from the server.
+        :rtype: dict[str, Any]
         """
+
         request = {"action" : "login", "creds": {"username" : self.__encode_utf8(username), "password" : password}}
         self.client.send(json.dumps(request))
         return self.__getResponse("login")
@@ -99,9 +111,10 @@ class API:
         """
         Sends a logout request to the server.
 
-        Returns:
-            json: The response from the server.
+        :returns: The response from the server.
+        :rtype: dict[str, Any]
         """
+
         request = {"action" : "logout"}
         self.client.send(json.dumps(request))
         return self.__getResponse("logout")
@@ -110,12 +123,12 @@ class API:
         """
         Sends a search request to the server to find a user with the provided username.
 
-        Args:
-            username (str): The username to search for.
-
-        Returns:
-            json: The response from the server.
+        :param username: The username to search for.
+        :type username: str
+        :return: The response from the server.
+        :rtype: dict[str, Any]
         """
+
         request = {"action" : "search", "who" : self.__encode_utf8(username)}
         self.client.send(json.dumps(request))
         response = self.__getResponse("search")
@@ -129,9 +142,10 @@ class API:
         """
         Sends a request to the server to get a list of online users.
 
-        Returns:
-            json: The response from the server.
+        :return: The response from the server.
+        :rtype: dict[str, Any]
         """
+
         request = {"action" : "usersOnline"}
         self.client.send(json.dumps(request))
         response = self.__getResponse("usersOnline")
@@ -144,12 +158,12 @@ class API:
         """
         Sends an invitation request to the server to invite a user with the provided username.
 
-        Args:
-            username (str): The username of the user to invite.
-
-        Returns:
-            json: The response from the server.
+        :param username: The username of the user to invite.
+        :type username: str
+        :return: The response from the server.
+        :rtype: dict[str, Any]
         """
+
         request = {"action" : "invite", "who" : self.__encode_utf8(username)}
         self.client.send(json.dumps(request))
         return self.__getResponse("invite")
@@ -158,12 +172,12 @@ class API:
         """
         Sends an accept request to the server to accept an invitation from a user with the provided username.
 
-        Args:
-            username (str): The username of the user to accept the invitation from.
-
-        Returns:
-            json: The response from the server.
+        :param username: The username of the user to accept the invitation from.
+        :type username: str
+        :return: The response from the server.
+        :rtype: dict[str, Any]
         """
+
         request = {"action" : "accept", "who" : self.__encode_utf8(username)}
         self.client.send(json.dumps(request))
         return self.__getResponse("accept")
@@ -172,13 +186,15 @@ class API:
         """
         Sends a message to the specified receiver.
 
-        Args:
-            receiver (str): The username of the receiver.
-            message (str): The message to send.
+        :param receiver: The username of the receiver.
+        :type receiver: str
+        :param message: The message to send.
+        :type message: str
 
-        Returns:
-            json: The response from the server.
+        :return: The response from the server.
+        :rtype: dict[str, Any]
         """
+
         request = {"action" : "sendto", "who" : self.__encode_utf8(receiver), "message" : self.__encode_utf8(message) }
         self.client.send(json.dumps(request))
         return self.__getResponse("sendto")
@@ -187,9 +203,10 @@ class API:
         """
         Sends a request to the server to get a list of pending invitations.
 
-        Returns:
-            json: The response from the server.
+        :return: The response from the server.
+        :rtype: dict[str, Any]
         """
+
         request = {"action" : "invitations"}
         self.client.send(json.dumps(request))
         response = self.__getResponse("invitations")
@@ -203,9 +220,10 @@ class API:
         """
         Sends a request to the server to get a list of friends.
 
-        Returns:
-            json: The response from the server.
+        :return: The response from the server.
+        :rtype: dict[str, Any]
         """
+
         request = {"action" : "friends"}
         self.client.send(json.dumps(request))
         response = self.__getResponse("friends")
@@ -219,9 +237,12 @@ class API:
         """
         Sends a request to the server to remove a friend.
 
-        Returns:
-            json: The response from the server.
+        :param username: The username of the friend to be removed.
+        :type username: str
+        :return: The response from the server.
+        :rtype: dict[str, Any]
         """
+
         request = {"action" : "removeFriend", "who" : self.__encode_utf8(username)}
         self.client.send(json.dumps(request))
         return self.__getResponse("removeFriend")

@@ -69,3 +69,5 @@ client/src/public_key.pem
 private_key.pem
 public_key.pem
 *.test
+
+!client/docs/Makefile
